@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Swing Coach">
+<meta name="theme-color" content="#0f3b2c">
+<title>Swing Coach</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --turf:#0f3b2c; --deep:#0a2a1f; --mat:#17513c; --line:#2a6a51;
+  --chalk:#f5f3e8; --dim:#a9c4b6;
+  --board-y:#ffd23f; --board-r:#f0554a; --board-g:#8fe07f; --ink:#0a2a1f;
+  --disp:'Barlow Condensed','Arial Narrow','Helvetica Neue',system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--turf);color:var(--chalk);font:16px/1.45 var(--body);-webkit-text-size-adjust:100%}
+body{overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:3px solid var(--board-y);outline-offset:2px}
+h1,h2,h3{font-family:var(--disp);font-weight:700;line-height:1.05;margin:0;letter-spacing:.01em}
+h2{font-size:34px} h3{font-size:24px}
+p{margin:0 0 10px}
+.dim{color:var(--dim)} .small{font-size:14px}
+[hidden]{display:none!important}
+
+#app{min-height:100%;display:flex;flex-direction:column;padding-top:var(--sat)}
+#top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+#top h1{font-size:26px}
+#top h1 span{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--chalk);box-shadow:inset 0 -5px 0 -1px var(--board-r);margin-right:8px;vertical-align:-1px}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--mat)}
+main{flex:1;padding:6px 18px calc(92px + var(--sab));max-width:640px;width:100%;margin:0 auto}
+.view{display:none}.view.active{display:block}
+
+#tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--deep);border-top:2px solid var(--line);padding-bottom:var(--sab);z-index:5}
+#tabs button{flex:1;padding:9px 0 8px;font-size:12px;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:3px}
+#tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#tabs button[aria-selected=true]{color:var(--board-y)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:10px;background:var(--mat);font-weight:600}
+.btn.primary{background:var(--board-y);color:var(--ink);font-family:var(--disp);font-size:24px;letter-spacing:.02em;min-height:60px;width:100%}
+.btn.ghost{background:transparent;border:2px solid var(--line)}
+.btn.danger{color:var(--board-r);border:2px solid var(--line);background:transparent}
+.btn.sm{min-height:40px;padding:0 13px;font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.seg{display:flex;background:var(--deep);border-radius:10px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:42px;border-radius:7px;font-weight:600;color:var(--dim);padding:0 8px}
+.seg button[aria-pressed=true]{background:var(--chalk);color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{min-height:40px;padding:0 14px;border-radius:20px;border:2px solid var(--line);font-size:15px}
+.chips button[aria-pressed=true]{background:var(--chalk);border-color:var(--chalk);color:var(--ink);font-weight:600}
+.block{margin-top:22px}
+.panel{background:var(--deep);border-radius:14px;padding:16px}
+label.f{display:block;font-size:14px;color:var(--dim);margin:12px 0 5px}
+input[type=text],input[type=number],input[type=date],textarea,select{width:100%;background:var(--deep);border:2px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+textarea{min-height:90px;resize:vertical}
+input[type=range]{width:100%;accent-color:var(--board-y)}
+
+/* bay diagram */
+#bay{width:100%;height:auto;display:block;margin:14px 0 6px}
+#bay .ph,#bay .cone,#bay .glf{transition:transform .45s cubic-bezier(.3,.9,.3,1)}
+@media (prefers-reduced-motion:reduce){#bay .ph,#bay .cone,#bay .glf{transition:none}}
+
+/* boards: yardage-marker style status rows */
+.board{display:grid;grid-template-columns:10px 1fr auto;gap:0 12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.board:last-child{border-bottom:0}
+.board i{width:10px;align-self:stretch;border-radius:3px;background:var(--board-g)}
+.board.warn i{background:var(--board-y)} .board.bad i{background:var(--board-r)} .board.na i{background:var(--line)}
+.board b{font-weight:600} .board small{display:block;color:var(--dim);font-size:13px}
+.board .val{font-family:var(--disp);font-size:26px;font-weight:700;text-align:right;white-space:nowrap}
+.fix{background:var(--chalk);color:var(--ink);border-radius:14px;padding:16px}
+.fix.bad{border-left:12px solid var(--board-r)} .fix.warn{border-left:12px solid var(--board-y)} .fix.good{border-left:12px solid #3f9b4b}
+.fix h3{font-size:32px;margin-bottom:6px}
+.fix p{margin:0}
+.fix .btn{background:var(--ink);color:var(--chalk);margin-top:12px}
+
+/* swing list */
+.sw{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.sw img,.sw .ph{width:54px;height:72px;object-fit:cover;border-radius:6px;background:var(--deep)}
+.sw .t{font-weight:600}
+.sw .n{font-family:var(--disp);font-size:24px;font-weight:700}
+.sw.sel{background:var(--mat);border-radius:8px;padding-left:8px;padding-right:8px}
+.daylabel{font-family:var(--disp);font-size:20px;color:var(--dim);margin:18px 0 2px}
+
+/* live + replay */
+.full{position:fixed;inset:0;background:#000;z-index:20;display:flex;flex-direction:column}
+.stage{position:relative;flex:1;min-height:0;background:#000;overflow:hidden}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage.mir video,.stage.mir canvas{transform:scaleX(-1)}
+.hud-top{position:absolute;top:calc(var(--sat) + 10px);left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;z-index:2;pointer-events:none}
+.hud-top>*{pointer-events:auto}
+#state{font-family:var(--disp);font-size:30px;font-weight:700;line-height:1.05;background:rgba(10,42,31,.82);padding:10px 14px;border-radius:10px;max-width:72%}
+#state.go{background:var(--board-y);color:var(--ink)}
+#state.busy{background:var(--chalk);color:var(--ink)}
+#count{font-family:var(--disp);font-size:30px;font-weight:700;background:rgba(10,42,31,.82);padding:10px 14px;border-radius:10px;min-width:54px;text-align:center}
+#banner{position:absolute;left:12px;right:12px;bottom:86px;z-index:2}
+.hud-bot{display:flex;gap:8px;padding:10px 12px calc(10px + var(--sab));background:var(--deep)}
+.hud-bot .btn{flex:1;padding:0 6px;font-size:14px;min-height:50px}
+#liveErr{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:28px;background:var(--turf)}
+#rpBody{background:var(--turf);padding:14px 16px calc(12px + var(--sab));max-height:46%;overflow:auto}
+#rpHead{font-family:var(--disp);font-weight:700;font-size:clamp(40px,12vw,64px);line-height:.95}
+#rpSub{font-size:18px;margin:8px 0 12px}
+#rpHead.bad{color:var(--board-r)} #rpHead.warn{color:var(--board-y)} #rpHead.good{color:var(--board-g)}
+
+/* sheets */
+.sheet{position:fixed;inset:0;background:var(--turf);z-index:30;overflow:auto;padding:calc(var(--sat) + 10px) 18px calc(30px + var(--sab));-webkit-overflow-scrolling:touch}
+.sheet>.inner{max-width:640px;margin:0 auto}
+.sheet .stage{flex:none;width:100%;max-height:58vh;border-radius:12px;margin:12px auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pair .stage{max-height:60vh;margin:8px 0}
+
+/* tempo */
+#lane{position:relative;height:64px;background:var(--deep);border-radius:32px;margin:18px 0}
+#lane .mk{position:absolute;top:8px;bottom:8px;width:3px;background:var(--line)}
+#lane #dot{position:absolute;top:10px;left:10px;width:44px;height:44px;border-radius:50%;background:var(--chalk);box-shadow:inset 0 -14px 0 -4px var(--board-r)}
+.big{font-family:var(--disp);font-size:56px;font-weight:700;line-height:1}
+
+/* learn */
+details{border-bottom:1px solid var(--line);padding:12px 0}
+summary{font-weight:600;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:10px;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-family:var(--disp);font-size:26px;line-height:.8;color:var(--board-y)}
+details[open] summary::after{content:'–'}
+details ol,details ul{margin:10px 0 4px;padding-left:22px} details li{margin-bottom:6px}
+.tick{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.tick::before{content:'';flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--dim);margin-top:1px}
+.tick[aria-pressed=true]::before{background:var(--board-g) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12l5 5 9-10' fill='none' stroke='%230a2a1f' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center/18px no-repeat;border-color:var(--board-g)}
+.tick[aria-pressed=true]{color:var(--dim)}
+.bar{height:10px;border-radius:5px;background:var(--deep);overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--board-g)}
+#toast{position:fixed;left:50%;bottom:calc(100px + var(--sab));transform:translateX(-50%);background:var(--chalk);color:var(--ink);padding:10px 16px;border-radius:10px;font-weight:600;z-index:60;max-width:88%;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <h1><span></span>Swing Coach</h1>
+    <button class="icon-btn" id="btnSettings" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+  </header>
+  <main>
+    <section class="view active" id="v-track">
+      <h2>Prop the phone up, swing, and hear what to fix.</h2>
+      <svg id="bay" viewBox="0 0 320 210" role="img" aria-label="Where to put the phone">
+        <rect x="92" y="34" width="136" height="136" rx="6" fill="#17513c" stroke="#2a6a51" stroke-width="2"/>
+        <path d="M160 26V8m-7 8 7-8 7 8" fill="none" stroke="#f5f3e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="174" y="19" fill="#a9c4b6" font-size="12" font-family="system-ui">target</text>
+        <circle cx="160" cy="102" r="4.5" fill="#f5f3e8"/>
+        <g class="glf"><ellipse cx="128" cy="102" rx="8" ry="19" fill="#f5f3e8"/><circle cx="131" cy="102" r="7" fill="#0a2a1f" stroke="#f5f3e8" stroke-width="2"/><path d="M134 96l22 5M134 108l22-5" stroke="#f5f3e8" stroke-width="2.5" stroke-linecap="round"/></g>
+        <path class="cone" d="M0 0L-150 -44V44Z" fill="#ffd23f" opacity=".16"/>
+        <g class="ph"><rect x="-6" y="-11" width="12" height="22" rx="3" fill="#ffd23f"/></g>
+        <text id="bayNote" x="160" y="202" text-anchor="middle" fill="#a9c4b6" font-size="12.5" font-family="system-ui"></text>
+      </svg>
+      <div class="seg" id="angleSeg" role="group" aria-label="Camera angle">
+        <button data-angle="face">Face-on</button><button data-angle="dtl">Down the line</button>
+      </div>
+      <p class="small dim" id="angleNote" style="margin-top:10px"></p>
+      <div class="block">
+        <div class="chips" id="clubChips" role="group" aria-label="Club"></div>
+      </div>
+      <div class="block">
+        <button class="btn primary" id="btnStart">Start tracking</button>
+        <p class="small dim" style="margin-top:12px">Stand so your whole body is in the picture, take your address and hold still for a second. A beep means it has locked on. Swing, then wait for the replay and the spoken tip.</p>
+        <p class="small dim">It follows your body, not the club or the ball, and the numbers are estimates from one camera. Use them to spot habits, not as exact measurements.</p>
+      </div>
+    </section>
+    <section class="view" id="v-swings"></section>
+    <section class="view" id="v-learn"></section>
+    <section class="view" id="v-tempo"></section>
+    <section class="view" id="v-log"></section>
+  </main>
+  <nav id="tabs" role="tablist">
+    <button data-tab="track" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><path d="M12 8v7m0 0-3 6m3-6 3 6M12 10l-5 3m5-3 6-1"/></svg>Track</button>
+    <button data-tab="swings"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="16" rx="1.5"/><rect x="13" y="4" width="7" height="16" rx="1.5"/></svg>Swings</button>
+    <button data-tab="learn"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10M5 20h14"/></svg>Learn</button>
+    <button data-tab="tempo"><svg viewBox="0 0 24 24"><path d="M8 21h8L14 3h-4zM12 15l5-8"/></svg>Tempo</button>
+    <button data-tab="log"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h3"/></svg>Log</button>
+  </nav>
+</div>
+
+<div class="full" id="live" hidden>
+  <div class="stage" id="liveStage">
+    <video id="cam" playsinline webkit-playsinline muted autoplay></video>
+    <canvas id="liveCv"></canvas>
+    <div class="hud-top"><div id="state">Starting…</div><div id="count" aria-label="Swings this session">0</div></div>
+    <div id="banner" hidden></div>
+    <div id="liveErr" hidden></div>
+  </div>
+  <div class="hud-bot">
+    <button class="btn" id="btnAngle"></button>
+    <button class="btn" id="btnFlip">Flip camera</button>
+    <button class="btn" id="btnVoice"></button>
+    <button class="btn danger" id="btnStop">Stop</button>
+  </div>
+</div>
+
+<div class="full" id="replay" hidden>
+  <div class="stage" id="rpStage"></div>
+  <div id="rpBody">
+    <div id="rpHead"></div>
+    <p id="rpSub"></p>
+    <div class="row"><button class="btn sm" id="rpAgain">Play again</button><button class="btn sm" id="rpDetail">Full breakdown</button><button class="btn sm ghost" id="rpNext" style="margin-left:auto">Next swing</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="detail" hidden><div class="inner"></div></div>
+<div class="sheet" id="compare" hidden><div class="inner"></div></div>
+<div class="sheet" id="settings" hidden><div class="inner"></div></div>
+<div id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const mid = (a, b) => ({x: (a.x + b.x) / 2, y: (a.y + b.y) / 2});
+const deg = r => r * 180 / Math.PI;
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('sc.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('sc.' + k, JSON.stringify(v)); } catch (e) {} }
+};
+const settings = Object.assign({hand: 'R', height: 175, voice: true, replay: true, replayRate: 0.3, model: 'lite', mirror: true, angle: 'face', club: 'Iron', facing: 'user', syncMs: 0}, store.get('settings', {}));
+const saveSettings = () => store.set('settings', settings);
+
+const DB = {
+  db: null,
+  open() { return new Promise(res => { try { const r = indexedDB.open('swingcoach', 1); r.onupgradeneeded = () => r.result.createObjectStore('swings', {keyPath: 'id'}); r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => res(); r.onblocked = () => res(); } catch (e) { res(); } }); },
+  run(mode, fn) { return new Promise(res => { if (!this.db) return res(null); try { const r = fn(this.db.transaction('swings', mode).objectStore('swings')); r.onsuccess = () => res(r.result === undefined ? true : r.result); r.onerror = () => res(null); } catch (e) { res(null); } }); },
+  put(s) { return this.run('readwrite', o => o.put(s)); },
+  del(id) { return this.run('readwrite', o => o.delete(id)); },
+  all() { return this.run('readonly', o => o.getAll()); }
+};
+let swings = [];
+const KEEP = 30;
+
+/* ---------- pose helpers ---------- */
+const STR = 100; // floats per stored frame: t + 33*(x,y,v)
+const pt = (f, i) => ({x: f.p[i * 3], y: f.p[i * 3 + 1], v: f.p[i * 3 + 2]});
+function makeFrame(lm, wl, t, W, H) {
+  const p = new Float32Array(99);
+  for (let i = 0; i < 33; i++) { const q = lm[i]; p[i * 3] = q.x * W; p[i * 3 + 1] = q.y * H; p[i * 3 + 2] = q.visibility == null ? 1 : q.visibility; }
+  let w = null;
+  if (wl && wl.length > 16) { w = {}; for (const i of [11, 12, 13, 14, 15, 16]) w[i] = {x: wl[i].x, y: wl[i].y, z: wl[i].z}; }
+  return {t, p, w};
+}
+function handsOf(lw, rw) { if (lw.v > 0.3 && rw.v > 0.3 || Math.abs(lw.v - rw.v) < 0.15) return mid(lw, rw); return lw.v > rw.v ? lw : rw; }
+function feat(f) {
+  const ls = pt(f, 11), rs = pt(f, 12), lh = pt(f, 23), rh = pt(f, 24), lw = pt(f, 15), rw = pt(f, 16);
+  const sh = mid(ls, rs), hip = mid(lh, rh);
+  return {sh, hip, torso: dist(sh, hip), hands: handsOf(lw, rw), wristGap: dist(lw, rw), vis: Math.min(ls.v, rs.v, lh.v, rh.v), wristVis: Math.max(lw.v, rw.v), feetVis: Math.min(pt(f, 27).v, pt(f, 28).v), headVis: pt(f, 0).v};
+}
+function headPt(f) { let x = 0, y = 0, w = 0; for (const i of [0, 7, 8]) { const q = pt(f, i), k = Math.max(q.v, 0.05); x += q.x * k; y += q.y * k; w += k; } return {x: x / w, y: y / w}; }
+function avgFrame(frames, i0, i1) {
+  i0 = clamp(i0, 0, frames.length - 1); i1 = clamp(i1, i0, frames.length - 1);
+  const p = new Float32Array(99); const n = i1 - i0 + 1;
+  for (let k = i0; k <= i1; k++) for (let j = 0; j < 99; j++) p[j] += frames[k].p[j] / n;
+  return {t: frames[i1].t, p, w: frames[Math.round((i0 + i1) / 2)].w};
+}
+function ang2(a, b, c) { const v1 = {x: a.x - b.x, y: a.y - b.y}, v2 = {x: c.x - b.x, y: c.y - b.y}; const d = Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y); return d ? deg(Math.acos(clamp((v1.x * v2.x + v1.y * v2.y) / d, -1, 1))) : 180; }
+function ang3(a, b, c) { const v1 = [a.x - b.x, a.y - b.y, a.z - b.z], v2 = [c.x - b.x, c.y - b.y, c.z - b.z]; const d = Math.hypot(...v1) * Math.hypot(...v2); return d ? deg(Math.acos(clamp((v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]) / d, -1, 1))) : 180; }
+
+/* ---------- swing detector ---------- */
+class Detector {
+  constructor(cb) { this.cb = cb; this.reset(); }
+  reset() { this.state = 'settle'; this.buf = []; this.prev = null; this.cand = null; this.candT = 0; this.anchor = null; this.lostT = null; this.awayT = null; }
+  cancel() { this.state = 'settle'; this.buf = []; this.cand = null; this.cb('cancel'); }
+  push(f) {
+    const a = feat(f); f.a = a; f.sp = 0;
+    if (!(a.torso > 8)) return;
+    if (this.prev) { const dt = f.t - this.prev.t; if (dt <= 0) return; f.sp = dist(a.hands, this.prev.a.hands) / a.torso / dt; }
+    this.prev = f;
+    const T = a.torso, st = this.state;
+    const pose = a.vis > 0.5 && a.wristVis > 0.35 && a.hands.y > a.sh.y + 0.45 * T && a.wristGap < 0.55 * T;
+    if (st === 'hold') return;
+    if (st === 'settle' || st === 'address') { if (!this.cand || !pose || dist(a.hands, this.cand) > 0.08 * T) { this.cand = a.hands; this.candT = f.t; } }
+    if (st === 'settle') {
+      if (pose && f.t - this.candT >= 0.6) { this.state = 'address'; this.buf = [f]; this.anchor = this.cand; this.addrT = f.t; this.lastStill = 0; this.hip0 = a.hip; this.awayT = this.lostT = null; this.cb('address', f); }
+      return;
+    }
+    this.buf.push(f); const i = this.buf.length - 1;
+    if (st === 'address') {
+      if (pose && f.t - this.candT >= 0.3) { this.anchor = this.cand; this.lastStill = i; this.hip0 = a.hip; }
+      const d = dist(a.hands, this.anchor) / T, rise = (this.anchor.y - a.hands.y) / T;
+      if (rise >= 0.4 && a.wristGap < 0.9 * T) { this.state = 'back'; this.minY = a.hands.y; this.topIdx = i; this.cb('motion', f); return; }
+      if (a.vis < 0.3) { if (this.lostT == null) this.lostT = f.t; } else this.lostT = null;
+      if (d > 0.3) { if (this.awayT == null) this.awayT = f.t; } else this.awayT = null;
+      if ((this.lostT != null && f.t - this.lostT > 1) || (this.awayT != null && f.t - this.awayT > 2) || dist(a.hip, this.hip0) > 0.5 * T) return this.cancel();
+      if (f.t - this.addrT > 8 && i === this.lastStill) { this.buf = [f]; this.lastStill = 0; this.addrT = f.t; this.cb('refresh', f); }
+      return;
+    }
+    if (st === 'back') {
+      if (a.hands.y < this.minY) { this.minY = a.hands.y; this.topIdx = i; }
+      else if (a.hands.y - this.minY > 0.15 * T) { this.state = 'down'; this.maxY = a.hands.y; this.lowIdx = i; }
+      if (f.t - this.buf[this.lastStill].t > 3.5) return this.cancel();
+      if (this.state !== 'down') return;
+    }
+    if (this.state === 'down') {
+      const thr = this.anchor.y - 0.1 * T, y = a.hands.y;
+      const toFollow = (idx, t) => { this.impIdx = idx; this.impT = t; this.state = 'follow'; this.cand = a.hands; this.candT = f.t; };
+      if (y >= thr) { const pv = this.buf[i - 1], py = pv.a.hands.y; let ti = f.t; if (py < thr && y > py) ti = pv.t + (thr - py) / (y - py) * (f.t - pv.t); return toFollow(i, ti); }
+      if (y > this.maxY) { this.maxY = y; this.lowIdx = i; }
+      else if (this.maxY - y > 0.15 * T && (this.maxY - this.minY) > 0.5 * (this.anchor.y - this.minY)) return toFollow(this.lowIdx, this.buf[this.lowIdx].t);
+      if (f.t - this.buf[this.topIdx].t > 1.5) return this.cancel();
+      return;
+    }
+    if (st === 'follow') {
+      if (dist(a.hands, this.cand) > 0.12 * T) { this.cand = a.hands; this.candT = f.t; }
+      const since = f.t - this.impT, held = f.t - this.candT >= 0.45;
+      if ((since > 0.8 && held) || since > 2.4) this.finish(held);
+    }
+  }
+  finish(held) {
+    const b = this.buf, T = b[this.lastStill].a.torso;
+    let take = this.lastStill, ax = 0, ay = 0, n = 0;
+    const tS = b[take].t; for (let k = 0; k <= take; k++) if ((tS - b[k].t >= 0.2 && tS - b[k].t <= 0.6) || take < 3) { ax += b[k].a.hands.x; ay += b[k].a.hands.y; n++; }
+    const A = {x: ax / n, y: ay / n};
+    let k0 = take; while (k0 > 0 && b[take].t - b[k0 - 1].t <= 0.5) k0--;
+    const still0 = take; take = k0;
+    for (let k = k0; k < this.topIdx; k++) { const d = dist(b[k].a.hands, A); if (d < 0.02 * T) take = k; else if (d > 0.1 * T && k > still0 - 1) break; }
+    let tTop = b[this.topIdx].t; const k = this.topIdx;
+    if (k > 0 && k < b.length - 1) { const y0 = b[k - 1].a.hands.y, y1 = b[k].a.hands.y, y2 = b[k + 1].a.hands.y, den = y0 - 2 * y1 + y2; if (den > 1e-6) { const off = clamp(0.5 * (y0 - y2) / den, -1, 1); tTop += off * (off < 0 ? b[k].t - b[k - 1].t : b[k + 1].t - b[k].t); } }
+    const tTake = b[take].t, back = tTop - tTake, down = this.impT - tTop;
+    let peak = 0; for (let j = this.topIdx; j <= Math.min(b.length - 1, this.impIdx + 2); j++) peak = Math.max(peak, b[j].sp);
+    if (back < 0.3 || back > 3 || down < 0.08 || down > 1 || peak < 3) return this.cancel();
+    this.state = 'hold';
+    this.cb('swing', {frames: b, takeIdx: take, topIdx: this.topIdx, impIdx: this.impIdx, tTake, tTop, tImp: this.impT, held});
+  }
+}
+
+/* ---------- analysis ---------- */
+const DRILLS = {
+  posture: {name: 'Hip-hinge setup', fixes: 'Standing too tall, too bent over, or stiff knees', how: ['Stand tall holding a club across your hips.', 'Push your hips back as if closing a car door with your backside, letting your chest tilt forward with a straight back.', 'Soften your knees just enough to unlock them.', 'Let your arms hang straight down from your shoulders. Where your hands hang is where you grip the club.', 'Do five rehearsals before you hit, then check it with a down-the-line swing.'], feel: 'Weight in the balls of your feet, backside out, arms hanging loose.'},
+  wall: {name: 'Bag behind you', fixes: 'Standing up or pushing your hips toward the ball', how: ['Set your golf bag or a chair so it just touches your backside at address.', 'Make slow half swings keeping your backside in touch with it.', 'Going back, your trail cheek stays on it. Coming down, your lead cheek replaces it.', 'If you lose contact before the ball has gone, you have stood up. Slow down and repeat.'], feel: 'Your backside stays back while your chest stays over the ball.'},
+  height: {name: 'Level head rehearsals', fixes: 'Dipping down or lifting up during the swing', how: ['Take your address with the sun or a light behind you so your shadow is in front.', 'Put a ball or tee on the ground at the top of your shadow\'s head.', 'Make slow swings watching that the shadow stays on the marker until after impact.', 'No shadow? Have the app track you face-on and work on the head figure.'], feel: 'Your chest stays the same height from start to strike.'},
+  feet: {name: 'Feet-together swings', fixes: 'Head and body sliding about, poor balance', how: ['With a short iron, stand with your feet touching.', 'Hit balls off a low tee with a three-quarter swing.', 'If you slide or lunge you will lose balance straight away, so the drill corrects itself.', 'Hit ten, then widen to a normal stance and keep the same centred feel.'], feel: 'You turn around a still centre instead of swaying.'},
+  brace: {name: 'Braced trail foot', fixes: 'Hips sliding away from the target going back', how: ['Wedge a golf ball or towel under the outside edge of your trail foot.', 'Make backswings feeling the pressure stay on the inside of that foot.', 'Your trail hip should turn behind you, like stepping back into a doorway, instead of sliding sideways.', 'Hit five balls with the wedge in place, then five without.'], feel: 'Trail knee stays flexed and inside the foot at the top.'},
+  step: {name: 'Step-through', fixes: 'Hanging back on the trail foot at the finish', how: ['Hit a short iron at an easy pace.', 'As you swing through, let your trail foot step forward past the ball toward the target, like walking after the shot.', 'You cannot step through unless your weight has moved forward, which is the point.', 'After five, hit normal shots finishing with your belt buckle facing the target and your trail foot up on its toe.'], feel: 'Nearly all your weight on the lead foot at the end.'},
+  lshape: {name: 'L to L swings', fixes: 'Lead arm collapsing at the top', how: ['Swing back only until your lead arm is level with the ground and the club points up, making an L.', 'Swing through to the mirror image on the other side.', 'Keep the lead arm comfortably long, not locked.', 'Hit ten balls this way. Add length only while the arm stays long.'], feel: 'Width. Your hands stay far from your head at the top.'},
+  turn: {name: 'Cross-arm turn', fixes: 'Short shoulder turn, or leaning toward the target going back', how: ['Without a ball, hold a club across your chest with arms crossed.', 'Take your golf posture and turn until the lead end of the club points at the ball or just behind it.', 'Feel your back facing the target and pressure in the inside of your trail foot.', 'Turn through until your chest faces the target. Do ten slow reps.'], feel: 'Your lead shoulder moves under your chin.'},
+  tempo: {name: 'Count the swing', fixes: 'Rushed or uneven tempo', how: ['Open the Tempo tab and start the beat.', 'Start back on the first beep, reach the top on the second, strike on the third.', 'Do five practice swings to the beat, then hit a ball keeping the same rhythm.', 'If you keep beating the second beep, pick a slower setting.'], feel: 'Smooth back, unhurried change of direction, then let it go.'},
+  finish: {name: 'Hold for three', fixes: 'Falling out of the finish', how: ['After every shot hold your finish and count to three.', 'Check: chest to target, weight on the lead foot, trail toe on the ground, hands high.', 'If you cannot hold it, swing at seven out of ten until you can.'], feel: 'You could have your photo taken at the end.'},
+  line: {name: 'Brush the line', fixes: 'Topped and heavy shots', how: ['Scratch or chalk a line on the mat or turf at right angles to your target.', 'Without a ball, make half swings trying to brush the ground on or just in front of the line.', 'Hitting behind the line means your weight is staying back.', 'When you can do five in a row, put a ball on the line.'], feel: 'The low point of the swing is just ahead of the ball.'},
+  rails: {name: 'Railway tracks', fixes: 'Aiming off line', how: ['Lay one club on the ground pointing at your target, just outside the ball.', 'Lay a second parallel to it along your toes.', 'Feet, knees, hips and shoulders all run along the near rail.', 'Hit every range shot with the rails down until it looks normal.'], feel: 'It may feel like you are aiming left of the target (right-handers). That is correct.'}
+};
+function grade(v, good, warn) {
+  if (v >= good[0] && v <= good[1]) return {st: 'good', sev: 0, lo: false};
+  const lo = v < good[0], d = lo ? good[0] - v : v - good[1], span = lo ? good[0] - warn[0] : warn[1] - good[1];
+  return {st: v >= warn[0] && v <= warn[1] ? 'warn' : 'bad', sev: span > 0 && isFinite(span) ? d / span : 1, lo};
+}
+function analyse(ev, cfg) {
+  const fr = ev.frames;
+  const A = avgFrame(fr, ev.takeIdx - 2, ev.takeIdx), T = avgFrame(fr, ev.topIdx - 1, ev.topIdx + 1), I = avgFrame(fr, ev.impIdx, ev.impIdx), F = avgFrame(fr, fr.length - 3, fr.length - 1);
+  const fa = feat(A), ft = feat(T), fi = feat(I), ff = feat(F);
+  const torso = fa.torso, cmT = (cfg.height || 175) * 0.29, cm = x => Math.round(Math.abs(x) * cmT);
+  const leadL = cfg.hand !== 'L';
+  const ix = leadL ? {sh: 11, el: 13, wr: 15, hip: 23, an: 27, tHip: 24, tAn: 28} : {sh: 12, el: 14, wr: 16, hip: 24, an: 28, tHip: 23, tAn: 27};
+  const hA = headPt(A), hT = headPt(T), hI = headPt(I);
+  const checks = [], guides = [];
+  const add = (key, label, shown, target, g, w, head, say, drill) => checks.push({key, label, shown, target, st: g.st, sev: g.sev, w, head, say, drill});
+  const shW = Math.abs(pt(A, 11).x - pt(A, 12).x) / torso;
+  let viewHint = null;
+  if (cfg.angle === 'face' && shW < 0.3) viewHint = {head: 'Looks like a down-the-line view', say: 'That looked like a down the line view. Change the angle setting, or turn to face the phone.'};
+  if (cfg.angle === 'dtl' && shW > 0.62) viewHint = {head: 'Looks like a face-on view', say: 'That looked like a face on view. Change the angle setting, or put the phone behind you on the target line.'};
+
+  const ratio = (ev.tTop - ev.tTake) / Math.max(0.05, ev.tImp - ev.tTop);
+  const tempoCheck = () => { const g = grade(ratio, [2.3, 3.6], [1.8, 4.4]); const r = ratio.toFixed(1);
+    add('tempo', 'Tempo', r + ':1', 'about 3:1', g, 0.7, g.lo ? 'Backswing rushed, ' + r + ':1' : 'Slow back, ' + r + ':1', g.lo ? `Tempo was ${r} to one. Take the club back more slowly and smoothly.` : `Tempo was ${r} to one. Your backswing is slow compared with your downswing. Swing back a touch brisker and commit through the ball.`, 'tempo'); };
+  const finishCheck = () => add('finish', 'Finish held', ev.held ? 'Yes' : 'No', 'balanced and still', {st: ev.held ? 'good' : 'warn', sev: 0.3}, 0.6, 'Finish not held', 'You did not hold your finish. Swing to a balanced finish and stay there until the ball lands.', 'finish');
+
+  if (cfg.angle === 'face') {
+    const dir = Math.sign(pt(A, ix.hip).x - pt(A, ix.tHip).x) || 1;
+    const hs = (hT.x - hA.x) * -dir / torso;
+    let g = grade(hs, [-0.10, 0.12], [-0.18, 0.20]);
+    add('headSway', 'Head sideways, backswing', cm(hs) + ' cm', 'under ' + Math.round(0.12 * cmT) + ' cm', g, 1.2, g.lo ? `Head leaned ${cm(hs)} cm to target` : `Head slid ${cm(hs)} cm back`,
+      g.lo ? `Your head leaned about ${cm(hs)} centimetres toward the target going back. Let your weight load into your back foot as you turn.` : `Your head slid about ${cm(hs)} centimetres away from the target going back. Turn around your spine and keep your head over the ball.`, g.lo ? 'turn' : 'feet');
+    const hd = (hI.y - hA.y) / torso;
+    g = grade(hd, [-0.08, 0.09], [-0.14, 0.16]);
+    add('headHeight', 'Head height at impact', (hd > 0 ? '−' : '+') + cm(hd) + ' cm', 'within ' + Math.round(0.08 * cmT) + ' cm', g, 1.15, g.lo ? `Stood up ${cm(hd)} cm` : `Dipped ${cm(hd)} cm`,
+      g.lo ? `You lifted up about ${cm(hd)} centimetres before impact. Stay down in your posture until the ball has gone.` : `You dipped about ${cm(hd)} centimetres coming into the ball. Keep your chest at the same height.`, g.lo ? 'wall' : 'height');
+    const hp = (ft.hip.x - fa.hip.x) * -dir / torso;
+    g = grade(hp, [-0.12, 0.10], [-0.2, 0.18]);
+    add('hipSway', 'Hip slide, backswing', cm(hp) + ' cm', 'under ' + Math.round(0.1 * cmT) + ' cm', g, 1.1, `Hips slid ${cm(hp)} cm ${g.lo ? 'forward' : 'back'}`,
+      g.lo ? `Your hips slid about ${cm(hp)} centimetres toward the target going back. Turn your hips instead of sliding them.` : `Your hips slid about ${cm(hp)} centimetres away from the target. Turn your back hip behind you instead of sliding sideways.`, 'brace');
+    const la = pt(A, ix.an), ta = pt(A, ix.tAn), stance = (la.x - ta.x) * dir;
+    if (Math.min(la.v, ta.v) > 0.4 && stance > 0.25 * torso) {
+      const r = (ff.hip.x - ta.x) * dir / stance; g = grade(r, [0.72, 9], [0.58, 9]);
+      add('weight', 'Weight forward at finish', Math.round(clamp(r, 0, 1.2) * 100) + '%', 'over 70%', g, 1.1, 'Hanging back at the finish', 'You finished with your weight on your back foot. Finish with your belt buckle over your front foot, facing the target.', 'step');
+    } else {
+      const s = (ff.hip.x - fa.hip.x) * dir / torso; g = grade(s, [0.15, 9], [0.05, 9]);
+      add('weight', 'Hip move to target', cm(s) + ' cm', 'over ' + Math.round(0.15 * cmT) + ' cm', g, 1.1, 'Hanging back at the finish', 'You finished with your weight on your back foot. Finish with your belt buckle over your front foot, facing the target.', 'step');
+    }
+    const arm = T.w ? ang3(T.w[ix.sh], T.w[ix.el], T.w[ix.wr]) : ang2(pt(T, ix.sh), pt(T, ix.el), pt(T, ix.wr));
+    g = grade(arm, [150, 181], [128, 181]);
+    add('leadArm', 'Lead arm at the top', Math.round(180 - arm) + '° bend', 'under 30°', g, 0.8, `Lead arm bent ${Math.round(180 - arm)}°`, 'Your lead arm folded at the top. Keep it comfortably long, even if the swing gets shorter.', 'lshape');
+    const turn = deg(Math.acos(clamp(Math.abs(pt(T, 11).x - pt(T, 12).x) / Math.max(1, Math.abs(pt(A, 11).x - pt(A, 12).x)), 0, 1)));
+    g = grade(turn, [68, 130], [50, 140]);
+    add('turn', 'Shoulder turn', '≈' + Math.round(turn) + '°', '70° or more', g, 0.9, `Shoulder turn only ${Math.round(turn)}°`, 'Your shoulder turn looked short. Turn until your back faces the target.', 'turn');
+    tempoCheck(); finishCheck();
+    guides.push({c: [hA.x, hA.y, 0.19 * torso]});
+    for (const h of [pt(A, 23), pt(A, 24)]) { const out = Math.sign(h.x - fa.hip.x) * 0.1 * torso; guides.push({l: [h.x + out, h.y - 0.45 * torso, h.x + out, Math.max(la.y, ta.y)]}); }
+  } else {
+    const facing = Math.sign(fa.hands.x - fa.hip.x) || 1;
+    const spine = f => deg(Math.atan2((f.sh.x - f.hip.x) * facing, f.hip.y - f.sh.y));
+    const sA = spine(fa), sI = spine(fi), driver = cfg.club === 'Driver';
+    let g = grade(sA, driver ? [22, 42] : [27, 47], driver ? [15, 50] : [19, 55]);
+    add('spine', 'Forward bend at address', Math.round(sA) + '°', driver ? '22–42°' : '27–47°', g, 1.3, g.lo ? `Standing too tall, ${Math.round(sA)}°` : `Bent over too far, ${Math.round(sA)}°`,
+      g.lo ? 'You are standing too upright at address. Push your hips back and tilt forward until your arms hang freely.' : 'You are bent over too far at address. Stand a little taller with your weight over the balls of your feet.', 'posture');
+    let fl = 0, fw = 0; for (const [h, k, an] of [[23, 25, 27], [24, 26, 28]]) { const w = Math.max(0.05, Math.min(pt(A, k).v, pt(A, an).v)); fl += (180 - ang2(pt(A, h), pt(A, k), pt(A, an))) * w; fw += w; } fl /= fw;
+    g = grade(fl, [10, 32], [4, 42]);
+    add('knee', 'Knee flex at address', Math.round(fl) + '°', '10–32°', g, 1.0, g.lo ? 'Knees too straight' : 'Sitting too low', g.lo ? 'Your knees are too straight at address. Soften them a little.' : 'You are squatting too much. Stand taller with just a soft flex in your knees.', 'posture');
+    const dS = sI - sA; g = grade(dS, [-8, 8], [-14, 14]);
+    add('postureKept', 'Posture kept to impact', (dS > 0 ? '+' : '−') + Math.abs(Math.round(dS)) + '°', 'within 8°', g, 1.25, g.lo ? `Stood up ${Math.abs(Math.round(dS))}°` : `Dived ${Math.round(dS)}° at the ball`,
+      g.lo ? `You stood up about ${Math.abs(Math.round(dS))} degrees by impact. Keep your chest over the ball until it has gone.` : 'You bent further over coming into the ball. Keep your chest at the same height.', g.lo ? 'wall' : 'height');
+    const th = (fi.hip.x - fa.hip.x) * facing / torso; g = grade(th, [-0.1, 0.07], [-0.2, 0.13]);
+    add('hipThrust', 'Hips toward the ball', cm(th) + ' cm', 'under ' + Math.round(0.07 * cmT) + ' cm', g, 1.1, g.lo ? `Hips backed away ${cm(th)} cm` : `Hips pushed in ${cm(th)} cm`,
+      g.lo ? 'Your hips backed away from the ball. Stay balanced over your feet.' : `Your hips pushed about ${cm(th)} centimetres toward the ball. Keep your backside back as you swing through.`, 'wall');
+    const hm = dist(hI, hA) / torso; g = grade(hm, [0, 0.11], [0, 0.19]);
+    add('headMove', 'Head movement to impact', cm(hm) + ' cm', 'under ' + Math.round(0.11 * cmT) + ' cm', g, 1.1, `Head moved ${cm(hm)} cm`, `Your head moved about ${cm(hm)} centimetres before impact. Stay steady and centred over the ball.`, 'feet');
+    tempoCheck(); finishCheck();
+    const ext = 1.75; guides.push({l: [fa.hip.x, fa.hip.y, fa.hip.x + (fa.sh.x - fa.hip.x) * ext, fa.hip.y + (fa.sh.y - fa.hip.y) * ext]});
+    const rear = fa.hip.x - facing * 0.22 * torso; guides.push({l: [rear, fa.hip.y - 0.5 * torso, rear, Math.max(pt(A, 27).y, pt(A, 28).y)]});
+    guides.push({c: [hA.x, hA.y, 0.19 * torso]});
+  }
+  let vs = 0, vn = 0; for (let k = ev.takeIdx; k <= ev.impIdx; k++) { vs += Math.min(fr[k].a.vis, 1); vn++; }
+  const conf = vn ? vs / vn : 0;
+  const score = c => (c.st === 'bad' ? 2 : 1) * c.w * (1 + Math.min(c.sev, 2));
+  const issues = checks.filter(c => c.st !== 'good').sort((a, b) => (b.st === 'bad') - (a.st === 'bad') || score(b) - score(a));
+  return {checks, priority: issues[0] ? issues[0].key : null, passed: checks.filter(c => c.st === 'good').length, total: checks.length, conf, lowConf: conf < 0.55, viewHint, guides, ratio, back: ev.tTop - ev.tTake, down: ev.tImp - ev.tTop};
+}
+const prio = sw => sw.res.priority ? sw.res.checks.find(c => c.key === sw.res.priority) : null;
+function headline(sw) {
+  const r = sw.res, p = prio(sw);
+  if (r.viewHint) return {cls: 'warn', head: r.viewHint.head, sub: 'The checks below assume the other angle, so ignore them for this swing.'};
+  if (r.lowConf) return {cls: 'warn', head: 'Couldn\'t see that one clearly', sub: 'Make sure your whole body is in the picture and the light is on you, not behind you.'};
+  if (!p) return {cls: 'good', head: 'Solid. Same again.', sub: `All ${r.total} checks in range. Tempo ${r.ratio.toFixed(1)}:1.`};
+  return {cls: p.st, head: p.head, sub: p.say.replace(/^[^.]*\.\s*/, '')};
+}
+
+/* ---------- voice + audio ---------- */
+const Voice = {
+  ok: 'speechSynthesis' in window, voice: null,
+  init() { if (!this.ok) return; const pick = () => { const vs = speechSynthesis.getVoices() || []; this.voice = vs.find(v => /en[-_]GB/i.test(v.lang) && v.localService) || vs.find(v => /en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null; }; pick(); try { speechSynthesis.addEventListener('voiceschanged', pick); } catch (e) {} },
+  say(text, force) { if (!this.ok || (!settings.voice && !force)) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); if (this.voice) u.voice = this.voice; u.lang = (this.voice && this.voice.lang) || 'en-GB'; u.rate = 1; speechSynthesis.speak(u); } catch (e) {} },
+  stop() { try { this.ok && speechSynthesis.cancel(); } catch (e) {} }
+};
+const Snd = {
+  ctx: null,
+  unlock() { try { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); } catch (e) {} },
+  beep(when, freq, len = 0.07, vol = 0.5) { const c = this.ctx; if (!c) return; try { const o = c.createOscillator(), g = c.createGain(); o.frequency.value = freq; o.type = 'sine'; const t = Math.max(when || 0, c.currentTime); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.001, t + len); o.connect(g).connect(c.destination); o.start(t); o.stop(t + len + 0.02); } catch (e) {} }
+};
+
+/* ---------- toast ---------- */
+let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2800); }
+
+/* ---------- drawing ---------- */
+const BONES = [[11, 12], [11, 23], [12, 24], [23, 24], [11, 13], [13, 15], [12, 14], [14, 16], [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32]];
+function drawSkeleton(ctx, p, H, hand) {
+  const lw = Math.max(3, H / 170), lead = hand === 'L' ? [12, 14, 16] : [11, 13, 15];
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [a, b] of BONES) {
+    if (p[a * 3 + 2] < 0.2 || p[b * 3 + 2] < 0.2) continue;
+    const isLead = lead.includes(a) && lead.includes(b);
+    ctx.strokeStyle = isLead ? '#ffd23f' : '#f5f3e8'; ctx.lineWidth = isLead ? lw * 1.35 : lw;
+    ctx.beginPath(); ctx.moveTo(p[a * 3], p[a * 3 + 1]); ctx.lineTo(p[b * 3], p[b * 3 + 1]); ctx.stroke();
+  }
+  ctx.fillStyle = '#f5f3e8';
+  for (const i of [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]) { if (p[i * 3 + 2] < 0.2) continue; ctx.beginPath(); ctx.arc(p[i * 3], p[i * 3 + 1], lw * 1.1, 0, 7); ctx.fill(); }
+}
+function drawGuides(ctx, guides, H) {
+  ctx.save(); ctx.strokeStyle = 'rgba(255,210,63,.9)'; ctx.lineWidth = Math.max(2, H / 300); ctx.setLineDash([H / 60, H / 80]);
+  for (const g of guides || []) { ctx.beginPath(); if (g.c) ctx.arc(g.c[0], g.c[1], g.c[2], 0, 7); else { ctx.moveTo(g.l[0], g.l[1]); ctx.lineTo(g.l[2], g.l[3]); } ctx.stroke(); }
+  ctx.restore();
+}
+
+/* ---------- clip player ---------- */
+class Player {
+  constructor(stage, sw) {
+    this.sw = sw; this.stage = stage;
+    stage.innerHTML = '<video playsinline webkit-playsinline muted preload="auto"></video><canvas></canvas>';
+    this.v = $('video', stage); this.c = $('canvas', stage); this.c.width = sw.W; this.c.height = sw.H; this.ctx = this.c.getContext('2d');
+    stage.classList.toggle('mir', !!sw.mir); stage.style.aspectRatio = sw.W + ' / ' + sw.H;
+    this.t = sw.ph.take; this.rate = 0.3; this.playing = false; this.end = sw.dur; this.skel = true; this.noVid = true; this.buf = new Float32Array(99);
+    if (sw.video) { try { this.url = URL.createObjectURL(sw.video); this.v.src = this.url; this.noVid = false; this.v.addEventListener('error', () => this.dropVideo()); } catch (e) {} }
+    if (this.noVid) this.v.style.display = 'none';
+    this.last = performance.now(); this.alive = true;
+    const loop = now => { if (!this.alive) return; this.tick(now); requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+  }
+  dropVideo() { this.noVid = true; this.v.style.display = 'none'; }
+  get time() { return this.noVid ? this.t : this.v.currentTime; }
+  seek(t) { t = clamp(t, 0, this.sw.dur); this.t = t; if (!this.noVid) { try { this.v.currentTime = t; } catch (e) {} } }
+  play(from, to) {
+    if (from != null) this.seek(from); this.end = to == null ? this.sw.dur : Math.min(to, this.sw.dur); this.playing = true;
+    if (!this.noVid) { this.v.playbackRate = this.rate; const p = this.v.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') this.dropVideo(); }); }
+  }
+  pause() { this.playing = false; if (!this.noVid) { try { this.v.pause(); } catch (e) {} } }
+  setRate(r) { this.rate = r; if (!this.noVid) this.v.playbackRate = r; }
+  tick(now) {
+    const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
+    if (this.playing) { if (this.noVid) this.t += dt * this.rate; if (this.time >= this.end - 0.004 || (!this.noVid && this.v.ended)) { this.pause(); if (this.onend) this.onend(); } }
+    this.draw(this.time); if (this.ontime) this.ontime(this.time);
+  }
+  poseAt(t) {
+    const d = this.sw.data, n = this.sw.n; let lo = 0, hi = n - 1;
+    while (lo < hi - 1) { const m = (lo + hi) >> 1; if (d[m * STR] <= t) lo = m; else hi = m; }
+    const t0 = d[lo * STR], t1 = d[hi * STR], k = t1 > t0 ? clamp((t - t0) / (t1 - t0), 0, 1) : 0;
+    for (let j = 0; j < 99; j++) this.buf[j] = d[lo * STR + 1 + j] * (1 - k) + d[hi * STR + 1 + j] * k;
+    return this.buf;
+  }
+  draw(t) {
+    const {ctx, sw} = this, W = sw.W, H = sw.H; ctx.clearRect(0, 0, W, H);
+    if (this.noVid) { ctx.fillStyle = '#0a2a1f'; ctx.fillRect(0, 0, W, H); }
+    drawGuides(ctx, sw.res.guides, H);
+    const ts = t + (settings.syncMs || 0) / 1000;
+    if (this.skel || this.noVid) {
+      const d = sw.data; ctx.lineWidth = Math.max(2, H / 260); ctx.lineCap = 'round';
+      for (const [from, to, col] of [[sw.ph.take, sw.ph.top, 'rgba(245,243,232,.85)'], [sw.ph.top, sw.ph.imp + 0.25, 'rgba(240,85,74,.95)']]) {
+        ctx.strokeStyle = col; ctx.beginPath(); let started = false;
+        for (let i = 0; i < sw.n; i++) { const ft = d[i * STR]; if (ft < from || ft > Math.min(to, ts)) continue; const o = i * STR + 1; const x = (d[o + 45] + d[o + 48]) / 2, y = (d[o + 46] + d[o + 49]) / 2; if (started) ctx.lineTo(x, y); else { ctx.moveTo(x, y); started = true; } }
+        ctx.stroke();
+      }
+      drawSkeleton(ctx, this.poseAt(ts), H, sw.hand);
+    }
+  }
+  destroy() { this.alive = false; this.pause(); if (this.url) { try { this.v.removeAttribute('src'); this.v.load(); } catch (e) {} URL.revokeObjectURL(this.url); } this.stage.innerHTML = ''; }
+}
+
+/* ---------- camera, pose model, recorder ---------- */
+const cam = $('#cam'), liveCv = $('#liveCv'), liveCtx = liveCv.getContext('2d');
+let stream = null, landmarker = null, landmarkerKind = null, running = false, paused = false, wake = null, lastVT = -1, sessionN = 0, repeatKey = null, repeatN = 0, lastHint = 0, player = null;
+const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision';
+const MODEL = k => `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_${k}/float16/1/pose_landmarker_${k}.task`;
+async function loadPose() {
+  if (window.__SC_TEST_POSE) { landmarker = window.__SC_TEST_POSE; return; }
+  if (landmarker && landmarkerKind === settings.model) return;
+  let vision, base;
+  for (const ver of ['@0.10.33', '']) { try { base = MP + ver; vision = await import(base + '/vision_bundle.mjs'); break; } catch (e) { vision = null; } }
+  if (!vision) throw new Error('load');
+  const files = await vision.FilesetResolver.forVisionTasks(base + '/wasm');
+  const make = delegate => vision.PoseLandmarker.createFromOptions(files, {baseOptions: {modelAssetPath: MODEL(settings.model), delegate}, runningMode: 'VIDEO', numPoses: 1, minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5, minTrackingConfidence: 0.5});
+  try { landmarker = await make('GPU'); } catch (e) { landmarker = await make('CPU'); }
+  landmarkerKind = settings.model;
+}
+function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } cam.srcObject = null; }
+async function startCamera() {
+  stopCamera();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw Object.assign(new Error('nocam'), {name: 'NoCamera'});
+  const want = {audio: false, video: {facingMode: settings.facing, width: {ideal: 1280}, height: {ideal: 720}, frameRate: {ideal: 60}}};
+  try { stream = await navigator.mediaDevices.getUserMedia(want); }
+  catch (e) { if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw e; stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: settings.facing}}); }
+  cam.srcObject = stream; await cam.play().catch(() => {});
+  $('#liveStage').classList.toggle('mir', settings.facing === 'user' && settings.mirror);
+  lastVT = -1; det.reset();
+}
+const Rec = {
+  mr: null, chunks: null, t0: 0, mime: '', active: false,
+  start(t) {
+    this.discard(); if (typeof MediaRecorder === 'undefined' || !stream) return;
+    try {
+      const mime = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } }) || '';
+      const mr = new MediaRecorder(stream, Object.assign({videoBitsPerSecond: 2500000}, mime ? {mimeType: mime} : {})); const chunks = [];
+      mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      mr.start(); this.mr = mr; this.chunks = chunks; this.t0 = t; this.mime = mr.mimeType || mime || 'video/mp4'; this.active = true;
+    } catch (e) { this.mr = null; this.active = false; }
+  },
+  stop() {
+    return new Promise(res => {
+      const mr = this.mr, chunks = this.chunks, mime = this.mime; this.mr = null; this.active = false;
+      if (!mr || mr.state === 'inactive') return res(null);
+      let done = false; const fin = b => { if (!done) { done = true; res(b); } };
+      mr.onstop = () => fin(chunks.length ? new Blob(chunks, {type: mime.split(';')[0]}) : null);
+      try { mr.stop(); } catch (e) { fin(null); }
+      setTimeout(() => fin(null), 3000);
+    });
+  },
+  discard() { const mr = this.mr; this.mr = null; this.active = false; if (mr && mr.state !== 'inactive') { mr.ondataavailable = null; mr.onstop = null; try { mr.stop(); } catch (e) {} } }
+};
+
+/* ---------- live tracking ---------- */
+const stateEl = $('#state');
+let hudKey = '';
+function hud(text, cls) { const k = text + '|' + cls; if (k === hudKey) return; hudKey = k; stateEl.textContent = text; stateEl.className = cls || ''; }
+const det = new Detector((type, f) => {
+  if (type === 'address') { Rec.start(f.t); Snd.beep(0, 880, 0.09); }
+  else if (type === 'refresh') Rec.start(f.t);
+  else if (type === 'cancel') Rec.discard();
+  else if (type === 'swing') onSwing(f);
+});
+function hint(text) { const now = performance.now(); if (now - lastHint < 20000) return; lastHint = now; Voice.say(text); }
+function onResult(res, t) {
+  const W = cam.videoWidth, H = cam.videoHeight;
+  if (liveCv.width !== W || liveCv.height !== H) { liveCv.width = W; liveCv.height = H; }
+  liveCtx.clearRect(0, 0, W, H);
+  const lm = res && res.landmarks && res.landmarks[0];
+  if (!lm) { if (det.state === 'settle') hud('Step into the picture'); return; }
+  const f = makeFrame(lm, res.worldLandmarks && res.worldLandmarks[0], t, W, H);
+  det.push(f);
+  drawSkeleton(liveCtx, f.p, H, settings.hand);
+  const a = f.a, s = det.state;
+  if (s === 'address') { const h = headPt(f); liveCtx.strokeStyle = '#ffd23f'; liveCtx.lineWidth = Math.max(3, H / 200); liveCtx.beginPath(); liveCtx.arc(h.x, h.y, 0.19 * a.torso, 0, 7); liveCtx.stroke(); hud('Locked on. Swing when ready.', 'go'); }
+  else if (s === 'back' || s === 'down' || s === 'follow') hud('Swinging…', 'go');
+  else if (s === 'settle') {
+    if (a.vis < 0.5) hud('Step into the picture');
+    else if (a.torso > 0.36 * H) { hud('Too close. Move the phone back.'); hint('You are too close. Move the phone further away.'); }
+    else if (a.feetVis < 0.45) { hud('I can\'t see your feet'); hint('I can\'t see your feet. Move the phone back or tilt it down.'); }
+    else if (a.headVis < 0.45) hud('I can\'t see your head');
+    else if (a.torso < 0.09 * H) hud('A bit far away. Come closer.');
+    else hud('Take your address and hold still');
+  }
+}
+function frameLoop(now, meta) {
+  if (!running) return;
+  if (!paused && landmarker && cam.readyState >= 2 && cam.videoWidth) {
+    const vt = meta && typeof meta.mediaTime === 'number' ? meta.mediaTime : cam.currentTime;
+    if (vt !== lastVT) { lastVT = vt; let res = null; try { res = landmarker.detectForVideo(cam, performance.now()); } catch (e) {} onResult(res, vt); }
+  }
+  schedule();
+}
+function schedule() { if (cam.requestVideoFrameCallback) cam.requestVideoFrameCallback(frameLoop); else requestAnimationFrame(frameLoop); }
+async function wakeOn() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function liveError(title, body) { const el = $('#liveErr'); el.innerHTML = `<div><h2>${esc(title)}</h2><p style="margin-top:12px">${esc(body)}</p><button class="btn" id="errClose" style="margin-top:8px">Back</button></div>`; el.hidden = false; $('#errClose').onclick = stopTracking; }
+function liveButtons() { $('#btnAngle').textContent = settings.angle === 'face' ? 'Face-on' : 'Down the line'; $('#btnVoice').textContent = settings.voice ? 'Voice on' : 'Voice off'; }
+async function startTracking() {
+  Snd.unlock(); Voice.say('Starting.');
+  $('#live').hidden = false; $('#liveErr').hidden = true; liveButtons(); hud('Starting camera…', 'busy'); $('#count').textContent = sessionN;
+  try { await startCamera(); }
+  catch (e) {
+    if (e && e.name === 'NotAllowedError') return liveError('Camera is blocked', 'Allow camera access for this site, then try again. On iPhone: Settings, Apps, Safari, Camera, or tap the aA button in the address bar and choose Website Settings.');
+    return liveError('No camera available', 'Open this page in Safari over https. In-app browsers and plain http pages cannot use the camera.');
+  }
+  hud('Loading body tracking…', 'busy');
+  try { await loadPose(); } catch (e) { stopCamera(); return liveError('Body tracking didn\'t load', 'It needs a connection the first time to download the tracking model (about 6 MB). Check your signal and try again.'); }
+  wakeOn(); running = true; paused = false; det.reset(); schedule();
+  Voice.say('Tracking on. Take your address and hold still.');
+}
+function stopTracking() {
+  running = false; paused = false; Rec.discard(); stopCamera(); Voice.stop(); closeReplay(true);
+  try { wake && wake.release(); } catch (e) {} wake = null;
+  $('#live').hidden = true; hudKey = ''; renderAll();
+}
+document.addEventListener('visibilitychange', () => {
+  if (!running) return;
+  if (document.hidden) { Rec.discard(); det.reset(); } else { cam.play().catch(() => {}); wakeOn(); if (!paused) det.reset(); }
+});
+
+function thumbOf() { try { const W = cam.videoWidth, H = cam.videoHeight, c = document.createElement('canvas'); c.width = 108; c.height = Math.round(108 * H / W); const x = c.getContext('2d'); if ($('#liveStage').classList.contains('mir')) { x.translate(c.width, 0); x.scale(-1, 1); } x.drawImage(cam, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.6); } catch (e) { return ''; } }
+function pack(ev, t0, blob, res, thumb) {
+  const fr = ev.frames.filter(f => f.t - t0 >= 0), n = fr.length, data = new Float32Array(n * STR);
+  fr.forEach((f, i) => { data[i * STR] = f.t - t0; data.set(f.p, i * STR + 1); });
+  return {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), at: Date.now(), angle: settings.angle, club: settings.club, hand: settings.hand, W: cam.videoWidth, H: cam.videoHeight, mir: $('#liveStage').classList.contains('mir'), n, data,
+    dur: n ? data[(n - 1) * STR] : 0, ph: {take: Math.max(0, ev.tTake - t0), top: ev.tTop - t0, imp: ev.tImp - t0, end: fr.length ? fr[n - 1].t - t0 : 0}, res, video: blob, thumb, star: false};
+}
+async function prune() {
+  const loose = swings.filter(s => !s.star);
+  for (const s of loose.slice(KEEP)) { swings.splice(swings.indexOf(s), 1); await DB.del(s.id); }
+}
+function spoken(sw, n) {
+  const r = sw.res, p = prio(sw);
+  if (r.viewHint) return `Swing ${n}. ${r.viewHint.say}`;
+  if (r.lowConf) return `Swing ${n}. I couldn't see that one clearly. Check your whole body is in the picture.`;
+  if (!p) return `Swing ${n}. That looked solid. Tempo ${r.ratio.toFixed(1)} to one. Same again.`;
+  let s = `Swing ${n}. ${p.say}`;
+  if (repeatN >= 3 && DRILLS[p.drill]) s += ` That's ${repeatN} in a row. Try the ${DRILLS[p.drill].name} drill.`;
+  return s;
+}
+async function onSwing(ev) {
+  paused = true; hud('Got it. Checking…', 'busy');
+  const t0 = Rec.active ? Rec.t0 : ev.frames[0].t, thumb = thumbOf();
+  const blob = await Rec.stop();
+  if (!running) return;
+  let sw;
+  try { sw = pack(ev, t0, blob, analyse(ev, {angle: settings.angle, hand: settings.hand, height: settings.height, club: settings.club}), thumb); }
+  catch (e) { paused = false; det.reset(); return; }
+  swings.unshift(sw); sessionN++; $('#count').textContent = sessionN;
+  const ok = await DB.put(sw); if (!ok && blob) { const lite = Object.assign({}, sw, {video: null}); await DB.put(lite); }
+  prune();
+  const key = sw.res.viewHint || sw.res.lowConf ? null : sw.res.priority;
+  if (key && key === repeatKey) repeatN++; else { repeatKey = key; repeatN = key ? 1 : 0; }
+  Voice.say(spoken(sw, sessionN));
+  if (settings.replay) openReplay(sw);
+  else { const h = headline(sw), b = $('#banner'); b.innerHTML = `<div class="fix ${h.cls}"><h3>${esc(h.head)}</h3><p>${esc(h.sub)}</p></div>`; b.hidden = false; setTimeout(() => b.hidden = true, 6000); paused = false; det.reset(); }
+}
+let rpTimer = null, rpSwing = null;
+function openReplay(sw) {
+  rpSwing = sw; const h = headline(sw);
+  $('#rpHead').textContent = h.head; $('#rpHead').className = h.cls; $('#rpSub').textContent = h.sub;
+  $('#replay').hidden = false;
+  player = new Player($('#rpStage'), sw); player.setRate(settings.replayRate);
+  const from = Math.max(0, sw.ph.take - 0.4), to = Math.min(sw.dur, sw.ph.imp + 1.0);
+  player.onend = () => { clearTimeout(rpTimer); if (running) rpTimer = setTimeout(() => closeReplay(), 2500); };
+  setTimeout(() => player && player.play(from, to), 150);
+  $('#rpAgain').onclick = () => { clearTimeout(rpTimer); player.play(from, to); };
+}
+function closeReplay(silent) {
+  clearTimeout(rpTimer); if (player) { player.destroy(); player = null; }
+  $('#replay').hidden = true; rpSwing = null;
+  if (running && !silent) { paused = false; det.reset(); hudKey = ''; }
+}
+$('#rpNext').onclick = () => closeReplay();
+$('#rpDetail').onclick = () => { const sw = rpSwing; clearTimeout(rpTimer); if (player) player.pause(); Voice.stop(); openDetail(sw, () => { if (running) closeReplay(); }); };
+
+/* ---------- swing detail ---------- */
+const fmtTime = t => new Date(t).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+const dayKey = t => { const d = new Date(t); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const dayLabel = t => { const k = dayKey(t); if (k === dayKey(Date.now())) return 'Today'; if (k === dayKey(Date.now() - 864e5)) return 'Yesterday'; return new Date(t).toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short'}); };
+const angleName = a => a === 'face' ? 'Face-on' : 'Down the line';
+function boardsHTML(sw) { return sw.res.checks.map(c => `<div class="board ${c.st}"><i></i><div><b>${esc(c.label)}</b><small>Aim for ${esc(c.target)}</small></div><div class="val">${esc(c.shown)}</div></div>`).join(''); }
+function speedChips(cur) { return [0.1, 0.25, 0.5, 1].map(r => `<button data-rate="${r}" aria-pressed="${r === cur}">${r === 1 ? 'Full speed' : r + '×'}</button>`).join(''); }
+let dPlayer = null, dClose = null;
+function openDetail(sw, onClose) {
+  dClose = onClose || null; const el = $('#detail .inner'), h = headline(sw), p = prio(sw), dr = p && !sw.res.viewHint && !sw.res.lowConf ? DRILLS[p.drill] : null;
+  el.innerHTML = `
+    <div class="spread"><h2>${esc(sw.club)}, ${esc(angleName(sw.angle).toLowerCase())}</h2><button class="btn sm" id="dX">Close</button></div>
+    <p class="dim small">${esc(dayLabel(sw.at))} at ${fmtTime(sw.at)}</p>
+    <div class="stage" id="dStage"></div>
+    <input type="range" id="dScrub" min="0" max="${sw.dur.toFixed(2)}" step="0.01" value="${sw.ph.take.toFixed(2)}" aria-label="Scrub through the swing">
+    <div class="row" style="margin:10px 0"><button class="btn sm" id="dPlay">Play</button><div class="chips" id="dRate">${speedChips(0.25)}</div></div>
+    <div class="chips" id="dPh"><button data-t="${sw.ph.take}">Address</button><button data-t="${sw.ph.top}">Top</button><button data-t="${sw.ph.imp}">Impact</button><button data-t="${sw.ph.end}">Finish</button><button id="dSkel" aria-pressed="true">Skeleton</button></div>
+    <div class="block fix ${h.cls}"><h3>${esc(h.head)}</h3><p>${esc(h.sub)}</p>${dr ? `<button class="btn sm" id="dDrill">Drill: ${esc(dr.name)}</button>` : ''}</div>
+    <div class="block"><div class="spread"><h3>All checks</h3><span class="dim">${sw.res.passed} of ${sw.res.total} in range</span></div>${boardsHTML(sw)}
+      <p class="small dim" style="margin-top:10px">Backswing ${sw.res.back.toFixed(2)} s, downswing ${sw.res.down.toFixed(2)} s. ${sw.video ? '' : 'No video was saved for this swing, so the replay shows the tracked skeleton only.'}</p></div>
+    <div class="block row"><button class="btn" id="dStar">${sw.star ? 'Unpin' : 'Pin to keep'}</button><button class="btn danger" id="dDel">Delete swing</button></div>`;
+  $('#detail').hidden = false; $('#detail').scrollTop = 0;
+  dPlayer = new Player($('#dStage'), sw); dPlayer.setRate(0.25);
+  const scrub = $('#dScrub'), play = $('#dPlay'); let dragging = false;
+  dPlayer.ontime = t => { if (!dragging) scrub.value = t; };
+  dPlayer.onend = () => play.textContent = 'Play';
+  scrub.oninput = () => { dragging = true; dPlayer.pause(); play.textContent = 'Play'; dPlayer.seek(+scrub.value); };
+  scrub.onchange = () => { dragging = false; };
+  play.onclick = () => { if (dPlayer.playing) { dPlayer.pause(); play.textContent = 'Play'; } else { const t = dPlayer.time; dPlayer.play(t >= sw.dur - 0.05 ? Math.max(0, sw.ph.take - 0.4) : t); play.textContent = 'Pause'; } };
+  $('#dRate').onclick = e => { const b = e.target.closest('[data-rate]'); if (!b) return; dPlayer.setRate(+b.dataset.rate); $$('#dRate button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  $('#dPh').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { dPlayer.pause(); play.textContent = 'Play'; dPlayer.seek(+b.dataset.t); } };
+  $('#dSkel').onclick = e => { dPlayer.skel = !dPlayer.skel; e.currentTarget.setAttribute('aria-pressed', dPlayer.skel); };
+  $('#dX').onclick = closeDetail;
+  if (dr) $('#dDrill').onclick = () => { const key = p.drill; closeDetail(); if (running) stopTracking(); learnSeg = 'drills'; openDrill = key; showTab('learn'); };
+  $('#dStar').onclick = async () => { sw.star = !sw.star; await DB.put(sw); $('#dStar').textContent = sw.star ? 'Unpin' : 'Pin to keep'; toast(sw.star ? 'Pinned. It won\'t be cleared out.' : 'Unpinned'); };
+  $('#dDel').onclick = async e => { const b = e.currentTarget; if (b.dataset.sure) { swings.splice(swings.indexOf(sw), 1); await DB.del(sw.id); closeDetail(); toast('Swing deleted'); } else { b.dataset.sure = 1; b.textContent = 'Tap again to delete'; } };
+}
+function closeDetail() { if (dPlayer) { dPlayer.destroy(); dPlayer = null; } $('#detail').hidden = true; const f = dClose; dClose = null; if (f) f(); else renderAll(); }
+
+/* ---------- compare ---------- */
+let cmpPlayers = [];
+function openCompare(a, b) {
+  const el = $('#compare .inner'), pair = [a, b].sort((x, y) => x.at - y.at);
+  el.innerHTML = `<div class="spread"><h2>Side by side</h2><button class="btn sm" id="cX">Close</button></div>
+    <p class="dim small">Lined up at impact. Earlier swing on the left.</p>
+    <div class="pair">${pair.map((s, i) => `<div><div class="stage" id="cS${i}"></div><p class="small"><b>${esc(dayLabel(s.at))} ${fmtTime(s.at)}</b><br><span class="dim">${esc(headline(s).head)}</span></p></div>`).join('')}</div>
+    <input type="range" id="cScrub" min="-1.4" max="1" step="0.01" value="-1.4" aria-label="Scrub both swings">
+    <div class="row" style="margin-top:10px"><button class="btn sm" id="cPlay">Play</button><div class="chips" id="cRate">${speedChips(0.25)}</div></div>
+    <div class="block">${pair[0].angle === pair[1].angle ? cmpTable(pair) : '<p class="dim">These two were filmed from different angles, so the checks don\'t line up.</p>'}</div>`;
+  $('#compare').hidden = false; $('#compare').scrollTop = 0;
+  cmpPlayers = pair.map((s, i) => { const p = new Player($('#cS' + i), s); p.setRate(0.25); p.seek(Math.max(0, s.ph.imp - 1.4)); return p; });
+  const scrub = $('#cScrub'), play = $('#cPlay'); let dragging = false, rel = -1.4;
+  const seekAll = r => { rel = r; cmpPlayers.forEach(p => p.seek(Math.max(0, p.sw.ph.imp + r))); };
+  cmpPlayers[0].ontime = t => { if (!dragging && cmpPlayers[0].playing) { rel = t - pair[0].ph.imp; scrub.value = rel; } };
+  cmpPlayers[0].onend = () => { cmpPlayers[1].pause(); play.textContent = 'Play'; };
+  scrub.oninput = () => { dragging = true; cmpPlayers.forEach(p => p.pause()); play.textContent = 'Play'; seekAll(+scrub.value); };
+  scrub.onchange = () => { dragging = false; };
+  play.onclick = () => { if (cmpPlayers[0].playing) { cmpPlayers.forEach(p => p.pause()); play.textContent = 'Play'; } else { if (rel > 0.95) rel = -1.4; cmpPlayers.forEach(p => p.play(Math.max(0, p.sw.ph.imp + rel), p.sw.ph.imp + 1)); play.textContent = 'Pause'; } };
+  $('#cRate').onclick = e => { const b = e.target.closest('[data-rate]'); if (!b) return; cmpPlayers.forEach(p => p.setRate(+b.dataset.rate)); $$('#cRate button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  $('#cX').onclick = () => { cmpPlayers.forEach(p => p.destroy()); cmpPlayers = []; $('#compare').hidden = true; };
+}
+function cmpTable(pair) {
+  return pair[0].res.checks.map(c => { const o = pair[1].res.checks.find(x => x.key === c.key); if (!o) return ''; return `<div class="board ${o.st}"><i></i><div><b>${esc(c.label)}</b><small>Aim for ${esc(c.target)}</small></div><div class="val"><span class="dim" style="font-size:20px">${esc(c.shown)} to </span>${esc(o.shown)}</div></div>`; }).join('');
+}
+
+/* ---------- views ---------- */
+const CLUBS = ['Driver', 'Wood', 'Hybrid', 'Iron', 'Wedge'];
+let tab = 'track', picking = false, picked = [], learnSeg = 'setup', openDrill = null, checkClub = 'Iron';
+function showTab(t) { tab = t; $$('.view').forEach(v => v.classList.toggle('active', v.id === 'v-' + t)); $$('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t)); if (t !== 'tempo') Metro.stop(); renderAll(); window.scrollTo(0, 0); }
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab); };
+function renderAll() { renderTrack(); if (tab === 'swings') renderSwings(); if (tab === 'learn') renderLearn(); if (tab === 'tempo') renderTempo(); if (tab === 'log') renderLog(); }
+
+function renderTrack() {
+  $$('#angleSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.angle === settings.angle));
+  $('#clubChips').innerHTML = CLUBS.map(c => `<button data-club="${c}" aria-pressed="${c === settings.club}">${c}</button>`).join('');
+  const face = settings.angle === 'face', left = settings.hand === 'L';
+  const bay = $('#bay');
+  $('.glf', bay).setAttribute('transform', left ? 'translate(320 0) scale(-1 1)' : '');
+  let px, py, rot;
+  if (face) { px = left ? 34 : 286; py = 102; rot = left ? 180 : 0; } else { px = left ? 176 : 144; py = 192; rot = 90; }
+  $('.ph', bay).style.transform = `translate(${px}px,${py}px) rotate(${face ? 0 : 90}deg)`;
+  $('.cone', bay).style.transform = `translate(${px}px,${py}px) rotate(${rot}deg) scale(${face ? 1 : 0.62})`;
+  $('#bayNote').textContent = 'Yellow marks where the phone goes';
+  $('#angleNote').textContent = face ? 'Phone level with your hands, 3 to 4 metres in front of your chest. Checks head movement, hip slide, weight shift, lead arm, shoulder turn and tempo.' : 'Phone behind you, on a line through your hands toward the target, hip height, 3 to 4 metres back. Checks posture at address, whether you keep it to impact, and tempo.';
+}
+$('#angleSeg').onclick = e => { const b = e.target.closest('button'); if (b) { settings.angle = b.dataset.angle; saveSettings(); renderTrack(); } };
+$('#clubChips').onclick = e => { const b = e.target.closest('button'); if (b) { settings.club = b.dataset.club; saveSettings(); renderTrack(); } };
+$('#btnStart').onclick = startTracking;
+$('#btnStop').onclick = stopTracking;
+$('#btnAngle').onclick = () => { settings.angle = settings.angle === 'face' ? 'dtl' : 'face'; saveSettings(); liveButtons(); det.reset(); Rec.discard(); Voice.say(settings.angle === 'face' ? 'Face on.' : 'Down the line.'); };
+$('#btnVoice').onclick = () => { settings.voice = !settings.voice; saveSettings(); liveButtons(); if (!settings.voice) Voice.stop(); else Voice.say('Voice on.'); };
+$('#btnFlip').onclick = async () => { settings.facing = settings.facing === 'user' ? 'environment' : 'user'; saveSettings(); Rec.discard(); try { await startCamera(); } catch (e) { toast('Couldn\'t switch camera'); } };
+
+function renderSwings() {
+  const el = $('#v-swings');
+  if (!swings.length) { el.innerHTML = `<h2>No swings yet</h2><p class="dim" style="margin-top:10px">Every swing the app tracks is saved here with its replay and checks. Start tracking to record your first one.</p><button class="btn" id="goTrack">Go to Track</button>`; $('#goTrack').onclick = () => showTab('track'); return; }
+  let html = `<div class="spread"><h2>${picking ? 'Pick two swings' : 'Your swings'}</h2><button class="btn sm ${picking ? '' : 'ghost'}" id="cmpBtn">${picking ? 'Cancel' : 'Compare two'}</button></div>`, last = '';
+  swings.forEach((s, i) => {
+    const d = dayLabel(s.at); if (d !== last) { html += `<div class="daylabel">${esc(d)}</div>`; last = d; }
+    const h = headline(s);
+    html += `<button class="sw ${picked.includes(s.id) ? 'sel' : ''}" data-i="${i}">${s.thumb ? `<img src="${s.thumb}" alt="">` : '<span class="ph"></span>'}<span><span class="t">${esc(h.head)}</span><br><span class="dim small">${fmtTime(s.at)}, ${esc(s.club)}, ${esc(angleName(s.angle).toLowerCase())}${s.star ? ', pinned' : ''}</span></span><span class="n">${s.res.passed}/${s.res.total}</span></button>`;
+  });
+  html += `<p class="small dim" style="margin-top:14px">The newest ${KEEP} swings are kept on this phone. Pin the ones you want to keep for longer.</p>`;
+  el.innerHTML = html;
+  $('#cmpBtn').onclick = () => { picking = !picking; picked = []; renderSwings(); };
+  $$('.sw', el).forEach(b => b.onclick = () => {
+    const s = swings[+b.dataset.i];
+    if (!picking) return openDetail(s);
+    if (picked.includes(s.id)) picked = picked.filter(x => x !== s.id); else picked.push(s.id);
+    if (picked.length === 2) { const [a, c] = picked.map(id => swings.find(x => x.id === id)); picking = false; picked = []; renderSwings(); openCompare(a, c); } else renderSwings();
+  });
+}
+
+const SETUP = [
+  {t: 'Grip', items: ['Lead hand: club runs across the base of the fingers, not the palm', 'Looking down you can see two knuckles on your lead hand', 'Trail hand covers the lead thumb, both thumb-and-finger Vs point at your trail shoulder', 'Pressure about 4 out of 10. Firm enough to control, loose enough to swing']},
+  {t: 'Stance and ball', items: {Driver: ['Feet a little wider than your shoulders', 'Ball opposite your lead heel, teed so half the ball sits above the clubhead', 'Trail shoulder a touch lower than the lead one'], Wood: ['Feet shoulder width', 'Ball a couple of inches inside your lead heel', 'Sweep it off the turf, no steep chop'], Hybrid: ['Feet shoulder width', 'Ball two ball-widths forward of centre', 'Swing it like a 7 iron'], Iron: ['Feet shoulder width', 'Ball in the middle, or just forward of middle for longer irons', 'Hands level with or just ahead of the ball'], Wedge: ['Feet narrower than your shoulders', 'Ball in the middle of your stance', 'A little more weight on your lead foot, hands slightly ahead']}},
+  {t: 'Posture', items: ['Tilt forward from the hips with a straight back', 'Knees soft, not squatting', 'Arms hang straight down, a hand-width between the club and your thighs', 'Weight over the balls of your feet']},
+  {t: 'Aim', items: ['Clubface first: point it at the target', 'Then set your feet parallel to that line, like railway tracks', 'Hips and shoulders match your feet']},
+  {t: 'Before you swing', items: ['Pick a small target, not just "the range"', 'One practice swing feeling today\'s one fix', 'Look at the target once, then go']}
+];
+const PLAN = [
+  ['Warm up, no ball', '10 slow practice swings with a wedge, then 5 cross-arm turns each way.'],
+  ['Wedge, 10 balls', 'L to L half swings. Only care about a clean strike and a held finish.'],
+  ['Iron, 15 balls', 'Pick the one fix the app keeps giving you. Alternate: one drill rehearsal, one ball.'],
+  ['Iron, 10 balls', 'Full swings with the whole setup checklist before each. Track these.'],
+  ['Driver or hybrid, 10 balls', 'Same tempo as the iron. Swing at 7 out of 10.'],
+  ['Finish, 5 balls', 'Change club and target every ball, as if you were playing a hole.']
+];
+function renderLearn() {
+  const el = $('#v-learn');
+  let html = `<div class="seg" id="learnSeg">${[['setup', 'Setup'], ['drills', 'Drills'], ['plan', 'Range plan']].map(([k, n]) => `<button data-seg="${k}" aria-pressed="${k === learnSeg}">${n}</button>`).join('')}</div>`;
+  if (learnSeg === 'setup') {
+    html += `<div class="block"><h2>Run through this before each ball</h2><div class="chips" id="ckClub" style="margin-top:12px">${CLUBS.map(c => `<button data-club="${c}" aria-pressed="${c === checkClub}">${c}</button>`).join('')}</div></div>`;
+    SETUP.forEach(g => { const items = Array.isArray(g.items) ? g.items : g.items[checkClub]; html += `<div class="block"><h3>${g.t}</h3>${items.map(i => `<button class="tick" aria-pressed="false">${esc(i)}</button>`).join('')}</div>`; });
+    html += `<div class="block"><button class="btn ghost" id="ckReset">Clear ticks</button></div>`;
+  } else if (learnSeg === 'drills') {
+    const counts = {}; swings.slice(0, 20).forEach(s => { const p = prio(s); if (p && !s.res.viewHint && !s.res.lowConf) counts[p.drill] = (counts[p.drill] || 0) + 1; });
+    const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    html += `<div class="block"><h2>Drills</h2>${top ? `<p class="dim" style="margin-top:8px">Your recent swings point most often at <b style="color:var(--chalk)">${esc(DRILLS[top].name)}</b>.</p>` : '<p class="dim" style="margin-top:8px">Track a few swings and the one that suits you most will be flagged here.</p>'}</div>`;
+    const keys = Object.keys(DRILLS).sort((a, b) => (counts[b] || 0) - (counts[a] || 0));
+    html += keys.map(k => { const d = DRILLS[k]; return `<details id="dr-${k}" ${k === openDrill ? 'open' : ''}><summary><span>${esc(d.name)}<br><span class="dim small" style="font-weight:400">${esc(d.fixes)}</span></span></summary><ol>${d.how.map(s => `<li>${esc(s)}</li>`).join('')}</ol><p class="small"><b>Feel:</b> ${esc(d.feel)}</p>${k === 'tempo' ? '<button class="btn sm" data-go="tempo">Open Tempo</button>' : ''}</details>`; }).join('');
+  } else {
+    const done = store.get('plan.' + dayKey(Date.now()), []);
+    html += `<div class="block"><h2>A 50-ball session</h2><p class="dim" style="margin-top:8px">Fewer balls with a purpose beats a bucket hit flat out. About 45 minutes.</p></div>` + PLAN.map((p, i) => `<button class="tick" data-plan="${i}" aria-pressed="${done.includes(i)}"><span><b>${i + 1}. ${esc(p[0])}</b><br><span class="small">${esc(p[1])}</span></span></button>`).join('');
+    html += `<div class="block"><h3>First four weeks</h3><ol style="padding-left:22px;margin-top:10px"><li><b>Setup and half swings.</b> Grip, posture, L to L. Track down the line.</li><li><b>Turn and balance.</b> Cross-arm turns, feet-together swings. Track face-on.</li><li><b>Weight shift and tempo.</b> Step-through, count the swing.</li><li><b>Longer clubs.</b> Bring in hybrid and driver at the same tempo.</li></ol></div>`;
+  }
+  el.innerHTML = html;
+  $('#learnSeg').onclick = e => { const b = e.target.closest('button'); if (b) { learnSeg = b.dataset.seg; openDrill = null; renderLearn(); } };
+  $$('.tick', el).forEach(b => b.onclick = () => { const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); if (b.dataset.plan != null) { const k = 'plan.' + dayKey(Date.now()); let d = store.get(k, []); const i = +b.dataset.plan; d = on ? [...new Set([...d, i])] : d.filter(x => x !== i); store.set(k, d); } });
+  const cc = $('#ckClub'); if (cc) cc.onclick = e => { const b = e.target.closest('button'); if (b) { checkClub = b.dataset.club; renderLearn(); } };
+  const cr = $('#ckReset'); if (cr) cr.onclick = () => $$('.tick', el).forEach(b => b.setAttribute('aria-pressed', 'false'));
+  $$('[data-go]', el).forEach(b => b.onclick = () => showTab(b.dataset.go));
+  if (openDrill) { const d = $('#dr-' + openDrill); if (d) d.scrollIntoView({block: 'start'}); }
+}
+
+/* ---------- tempo metronome ---------- */
+const TEMPOS = [['Brisk', 0.6], ['Medium', 0.75], ['Smooth', 0.9], ['Slow', 1.05], ['Learner', 1.2]];
+const Metro = {
+  on: false, back: store.get('tempo.back', 0.9), ratio: store.get('tempo.ratio', 3), gap: 2.2, timer: null, t0: 0, raf: 0,
+  start() { Snd.unlock(); if (!Snd.ctx) return toast('Sound isn\'t available in this browser'); this.on = true; this.cycle(); this.anim(); },
+  stop() { this.on = false; clearTimeout(this.timer); cancelAnimationFrame(this.raf); const d = $('#dot'); if (d) d.style.left = '10px'; const b = $('#mGo'); if (b) b.textContent = 'Start the beat'; },
+  cycle() { if (!this.on) return; const c = Snd.ctx, t = c.currentTime + 0.12, down = this.back / this.ratio; Snd.beep(t, 620, 0.08); Snd.beep(t + this.back, 830, 0.08); Snd.beep(t + this.back + down, 1250, 0.11, 0.7); this.t0 = performance.now() + 120; this.timer = setTimeout(() => this.cycle(), (this.back + down + this.gap) * 1000); },
+  anim() { if (!this.on) return; const d = $('#dot'), lane = $('#lane'); if (d && lane) { const w = lane.clientWidth - 64, e = (performance.now() - this.t0) / 1000, down = this.back / this.ratio; let x = 0; if (e > 0 && e < this.back) x = Math.sin(e / this.back * Math.PI / 2); else if (e >= this.back && e < this.back + down) { const k = (e - this.back) / down; x = 1 - k * k; } d.style.left = (10 + x * w) + 'px'; } this.raf = requestAnimationFrame(() => this.anim()); }
+};
+function renderTempo() {
+  const el = $('#v-tempo'), last = swings.find(s => !s.res.lowConf), down = Metro.back / Metro.ratio;
+  el.innerHTML = `<h2>Three beeps: start back, top, strike.</h2>
+    <div id="lane"><span class="mk" style="left:31px"></span><span class="mk" style="right:31px"></span><div id="dot"></div></div>
+    <div class="spread"><div><div class="big">${Metro.ratio}:1</div><div class="dim small">back ${Metro.back.toFixed(2)} s, down ${down.toFixed(2)} s</div></div><button class="btn" id="mGo" style="min-width:150px">${Metro.on ? 'Stop' : 'Start the beat'}</button></div>
+    <div class="block"><h3>Pace</h3><div class="chips" id="mPace" style="margin-top:10px">${TEMPOS.map(([n, b]) => `<button data-back="${b}" aria-pressed="${Math.abs(b - Metro.back) < 0.01}">${n}</button>`).join('')}</div></div>
+    <div class="block"><h3>Shape</h3><div class="seg" id="mRatio" style="margin-top:10px"><button data-r="3" aria-pressed="${Metro.ratio === 3}">Full swing 3:1</button><button data-r="2" aria-pressed="${Metro.ratio === 2}">Chips and pitches 2:1</button></div></div>
+    ${last ? `<div class="block panel"><p>Your last tracked swing was <b>${last.res.ratio.toFixed(1)}:1</b> with a ${last.res.back.toFixed(2)} s backswing.</p><button class="btn sm" id="mMatch">Use my backswing time</button></div>` : ''}
+    <p class="small dim block">No sound? Flick the ringer switch on and turn the volume up. Most beginners rush the backswing, so start on Slow or Learner.</p>`;
+  $('#mGo').onclick = () => { if (Metro.on) Metro.stop(); else { Metro.start(); if (Metro.on) $('#mGo').textContent = 'Stop'; } };
+  const set = () => { store.set('tempo.back', Metro.back); store.set('tempo.ratio', Metro.ratio); const on = Metro.on; Metro.stop(); renderTempo(); if (on) { Metro.start(); $('#mGo').textContent = 'Stop'; } };
+  $('#mPace').onclick = e => { const b = e.target.closest('button'); if (b) { Metro.back = +b.dataset.back; set(); } };
+  $('#mRatio').onclick = e => { const b = e.target.closest('button'); if (b) { Metro.ratio = +b.dataset.r; set(); } };
+  const m = $('#mMatch'); if (m) m.onclick = () => { Metro.back = clamp(+last.res.back.toFixed(2), 0.4, 1.6); set(); };
+}
+
+/* ---------- log ---------- */
+function trendsHTML() {
+  let html = '';
+  for (const angle of ['face', 'dtl']) {
+    const list = swings.filter(s => s.angle === angle && !s.res.viewHint && !s.res.lowConf); if (list.length < 3) continue;
+    const recent = list.slice(0, 15), older = list.slice(15, 30);
+    const rate = (arr, key) => { const xs = arr.map(s => s.res.checks.find(c => c.key === key)).filter(Boolean); return xs.length ? xs.filter(c => c.st === 'good').length / xs.length : null; };
+    html += `<div class="block"><h3>${angleName(angle)}, last ${recent.length} swings</h3>`;
+    for (const c of recent[0].res.checks) { const r = rate(recent, c.key), o = older.length >= 5 ? rate(older, c.key) : null; if (r == null) continue; const dlt = o == null ? '' : r - o > 0.08 ? ', up' : o - r > 0.08 ? ', down' : ', steady';
+      html += `<div style="margin:12px 0"><div class="spread small"><span>${esc(c.label)}</span><span class="dim">${Math.round(r * 100)}% in range${dlt}</span></div><div class="bar"><span style="width:${Math.round(r * 100)}%"></span></div></div>`; }
+    html += '</div>';
+  }
+  return html;
+}
+function renderLog() {
+  const el = $('#v-log'), log = store.get('log', []), today = swings.filter(s => dayKey(s.at) === dayKey(Date.now()));
+  const counts = {}; today.forEach(s => { const p = prio(s); if (p && !s.res.viewHint && !s.res.lowConf) counts[p.label] = (counts[p.label] || 0) + 1; });
+  const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+  el.innerHTML = `<h2>Practice log</h2>
+    <p class="dim" style="margin-top:8px">${today.length ? `${today.length} swing${today.length > 1 ? 's' : ''} tracked today.${top ? ` Most common flag: ${esc(top.toLowerCase())}.` : ''}` : 'No swings tracked today.'}</p>
+    ${trendsHTML()}
+    <div class="block"><h3>Add a session note</h3>
+      <form id="logForm">
+        <label class="f" for="lgDate">Date</label><input type="date" id="lgDate" value="${dayKey(Date.now())}">
+        <label class="f" for="lgWhere">Where</label><input type="text" id="lgWhere" placeholder="Range, course, garden" maxlength="60">
+        <label class="f">Clubs worked on</label><div class="chips" id="lgClubs">${CLUBS.map(c => `<button type="button" data-club="${c}" aria-pressed="false">${c}</button>`).join('')}</div>
+        <label class="f" for="lgBalls">Balls hit</label><input type="number" id="lgBalls" inputmode="numeric" min="0" max="999" placeholder="50">
+        <label class="f">How did it feel?</label><div class="chips" id="lgFeel">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-pressed="false">${n}</button>`).join('')}</div>
+        <label class="f" for="lgNote">What worked, what to work on next</label><textarea id="lgNote" maxlength="800"></textarea>
+        <button class="btn" style="margin-top:14px;background:var(--chalk);color:var(--ink)">Save note</button>
+      </form></div>
+    <div class="block">${log.length ? `<div class="spread"><h3>Notes</h3><button class="btn sm ghost" id="lgCopy">Copy all</button></div>` : ''}
+      ${log.map((e, i) => `<div class="board na" style="grid-template-columns:10px 1fr auto"><i></i><div><b>${esc(new Date(e.date + 'T12:00').toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short'}))}${e.where ? ', ' + esc(e.where) : ''}</b><small>${[e.clubs && e.clubs.length ? esc(e.clubs.join(', ')) : '', e.balls ? e.balls + ' balls' : '', e.feel ? 'felt ' + e.feel + '/5' : ''].filter(Boolean).join(', ')}</small>${e.note ? `<div class="small" style="margin-top:4px;white-space:pre-wrap">${esc(e.note)}</div>` : ''}</div><button class="btn sm ghost" data-del="${i}" aria-label="Delete note">Delete</button></div>`).join('')}</div>`;
+  const press = id => $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; if (id === '#lgFeel') $$(id + ' button').forEach(x => x.setAttribute('aria-pressed', x === b)); else b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); };
+  press('#lgClubs'); press('#lgFeel');
+  $('#logForm').onsubmit = e => { e.preventDefault(); const feel = $('#lgFeel [aria-pressed=true]');
+    const entry = {date: $('#lgDate').value || dayKey(Date.now()), where: $('#lgWhere').value.trim(), clubs: $$('#lgClubs [aria-pressed=true]').map(b => b.dataset.club), balls: parseInt($('#lgBalls').value, 10) || 0, feel: feel ? +feel.dataset.n : 0, note: $('#lgNote').value.trim()};
+    if (!entry.where && !entry.note && !entry.balls && !entry.clubs.length && !entry.feel) return toast('Add something to save first');
+    const l = store.get('log', []); l.unshift(entry); l.sort((a, b) => a.date < b.date ? 1 : -1); store.set('log', l); toast('Note saved'); renderLog(); };
+  $$('[data-del]', el).forEach(b => b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Sure?'; return; } const l = store.get('log', []); l.splice(+b.dataset.del, 1); store.set('log', l); renderLog(); });
+  const cp = $('#lgCopy'); if (cp) cp.onclick = async () => { const text = log.map(e => `${e.date}${e.where ? ' ' + e.where : ''}\n${[e.clubs.join(', '), e.balls ? e.balls + ' balls' : '', e.feel ? 'felt ' + e.feel + '/5' : ''].filter(Boolean).join(', ')}\n${e.note}`.trim()).join('\n\n'); try { await navigator.clipboard.writeText(text); toast('Notes copied'); } catch (err) { toast('Couldn\'t copy'); } };
+}
+
+/* ---------- settings ---------- */
+function openSettings() {
+  const el = $('#settings .inner');
+  const seg = (id, opts, cur) => `<div class="seg" id="${id}">${opts.map(([v, n]) => `<button data-v="${v}" aria-pressed="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
+  el.innerHTML = `<div class="spread"><h2>Settings</h2><button class="btn sm" id="sX">Done</button></div>
+    <label class="f">You swing</label>${seg('sHand', [['R', 'Right-handed'], ['L', 'Left-handed']], settings.hand)}
+    <label class="f" for="sHeight">Your height in cm (used to turn movement into centimetres)</label><input type="number" id="sHeight" inputmode="numeric" min="120" max="220" value="${settings.height}">
+    <label class="f">Spoken feedback</label>${seg('sVoice', [[true, 'On'], [false, 'Off']], settings.voice)}
+    <button class="btn sm" id="sTest" style="margin-top:8px">Test the voice</button>
+    <label class="f">Replay after each swing</label>${seg('sReplay', [[true, 'On'], [false, 'Off']], settings.replay)}
+    <label class="f">Replay speed</label>${seg('sRate', [[0.2, 'Slowest'], [0.3, 'Slow'], [0.5, 'Half']], settings.replayRate)}
+    <label class="f">Tracking model</label>${seg('sModel', [['lite', 'Fast'], ['full', 'More precise']], settings.model)}
+    <p class="small dim" style="margin-top:6px">More precise is a bigger download and may run slower on older phones.</p>
+    <label class="f">Mirror the front camera</label>${seg('sMirror', [[true, 'On'], [false, 'Off']], settings.mirror)}
+    <label class="f" for="sSync">Skeleton timing on replays: <span id="sSyncV">${settings.syncMs}</span> ms</label><input type="range" id="sSync" min="-150" max="150" step="10" value="${settings.syncMs}">
+    <p class="small dim">If the drawn skeleton runs ahead of or behind your body on replays, nudge this.</p>
+    <div class="block panel small"><b>Keeping your swings.</b> Videos and notes are stored on this phone only. Safari can clear a site's data after a week without visits, so add this page to your Home Screen (Share, then Add to Home Screen) to keep them.</div>
+    <div class="block"><button class="btn danger" id="sWipe">Delete all swings</button></div>`;
+  const bind = (id, key, conv) => $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; settings[key] = conv(b.dataset.v); saveSettings(); $$(id + ' button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  const bool = v => v === 'true';
+  bind('#sHand', 'hand', String); bind('#sVoice', 'voice', bool); bind('#sReplay', 'replay', bool); bind('#sRate', 'replayRate', Number); bind('#sModel', 'model', String); bind('#sMirror', 'mirror', bool);
+  $('#sHeight').onchange = e => { settings.height = clamp(parseInt(e.target.value, 10) || 175, 120, 220); e.target.value = settings.height; saveSettings(); };
+  $('#sSync').oninput = e => { settings.syncMs = +e.target.value; $('#sSyncV').textContent = settings.syncMs; saveSettings(); };
+  $('#sTest').onclick = () => { if (!Voice.ok) return toast('This browser has no speech voice'); Voice.say('Swing one. Your head slid about eight centimetres back.', true); };
+  $('#sWipe').onclick = async e => { const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to delete everything'; return; } for (const s of swings) await DB.del(s.id); swings = []; toast('All swings deleted'); b.textContent = 'Delete all swings'; delete b.dataset.sure; };
+  $('#sX').onclick = () => { $('#settings').hidden = true; renderAll(); };
+  $('#settings').hidden = false; $('#settings').scrollTop = 0;
+}
+$('#btnSettings').onclick = openSettings;
+
+/* ---------- boot ---------- */
+window.__sc = {Detector, analyse, makeFrame, settings, get swings() { return swings; }};
+Voice.init();
+renderAll();
+DB.open().then(() => DB.all()).then(list => { if (Array.isArray(list)) { swings = list.sort((a, b) => b.at - a.at); renderAll(); } });
+})();
+</script>
+</body>
+</html>
