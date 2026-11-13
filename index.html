@@ -171,7 +171,14 @@ details ol,details ul{margin:10px 0 4px;padding-left:22px} details li{margin-bot
       <div class="block">
         <button class="btn primary" id="btnStart">Start tracking</button>
         <p class="small dim" style="margin-top:12px">Stand so your whole body is in the picture, take your address and hold still for a second. A beep means it has locked on. Swing, then wait for the replay and the spoken tip.</p>
-        <p class="small dim">It follows your body, not the club or the ball, and the numbers are estimates from one camera. Use them to spot habits, not as exact measurements.</p>
+        <p class="small dim">It follows your body and watches the ball leave. It does not follow the club, and the numbers are estimates from one camera. Use them to spot habits, not as exact measurements.</p>
+      </div>
+      <div class="block">
+        <button class="btn ghost" id="btnUpload" style="width:100%">Analyse a video instead</button>
+        <input type="file" id="fileIn" accept="video/*" hidden>
+        <label class="f">Speed of the video you pick</label>
+        <div class="seg" id="slowSeg" role="group" aria-label="Video speed"><button data-k="1">Normal</button><button data-k="4">Slo-mo 120</button><button data-k="8">Slo-mo 240</button></div>
+        <p class="small dim" style="margin-top:10px">Pick a clip filmed from the angle chosen above. It needs your whole body in the picture and about a second of you standing still over the ball before the swing. For slo-mo, the whole swing has to sit inside the slowed part of the clip.</p>
       </div>
     </section>
     <section class="view" id="v-swings"></section>
@@ -234,7 +241,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('sc.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('sc.' + k, JSON.stringify(v)); } catch (e) {} }
 };
-const settings = Object.assign({hand: 'R', height: 175, voice: true, replay: true, replayRate: 0.3, model: 'lite', mirror: true, angle: 'face', club: 'Iron', facing: 'user', syncMs: 0}, store.get('settings', {}));
+const settings = Object.assign({hand: 'R', height: 175, voice: true, replay: true, replayRate: 0.3, model: 'lite', mirror: true, angle: 'face', club: 'Iron', facing: 'user', syncMs: 0, slow: 1, ball: true}, store.get('settings', {}));
 const saveSettings = () => store.set('settings', settings);
 
 const DB = {
@@ -487,6 +494,27 @@ function drawGuides(ctx, guides, H) {
   ctx.restore();
 }
 
+function poseAt(sw, t, out) {
+  const d = sw.data, n = sw.n; let lo = 0, hi = n - 1;
+  while (lo < hi - 1) { const m = (lo + hi) >> 1; if (d[m * STR] <= t) lo = m; else hi = m; }
+  const t0 = d[lo * STR], t1 = d[hi * STR], k = t1 > t0 ? clamp((t - t0) / (t1 - t0), 0, 1) : 0;
+  for (let j = 0; j < 99; j++) out[j] = d[lo * STR + 1 + j] * (1 - k) + d[hi * STR + 1 + j] * k;
+  return out;
+}
+function drawBall(ctx, sw, t) {
+  const b = sw.ball; if (!b || !b.ok) return;
+  const lw = Math.max(2, sw.H / 280);
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (t < b.tGone) { ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 2 + lw * 2, 0, 7); ctx.stroke(); }
+  else if (b.pts.length) {
+    const seen = b.pts.filter(q => q.t <= t + 1e-3), last = seen[seen.length - 1];
+    ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = lw * 1.6; ctx.beginPath(); ctx.moveTo(b.x, b.y); for (const q of seen) ctx.lineTo(q.x, q.y); ctx.stroke();
+    if (last && seen.length === b.pts.length) { const far = Math.max(sw.W, sw.H) * 2; ctx.globalAlpha = 0.55; ctx.setLineDash([lw * 4, lw * 4]); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(last.x + b.ux * far, last.y + b.uy * far); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
+    ctx.fillStyle = '#f5f3e8'; for (const q of seen) { ctx.beginPath(); ctx.arc(q.x, q.y, lw * 1.5, 0, 7); ctx.fill(); }
+  }
+  ctx.restore();
+}
+
 /* ---------- clip player ---------- */
 class Player {
   constructor(stage, sw) {
@@ -494,33 +522,27 @@ class Player {
     stage.innerHTML = '<video playsinline webkit-playsinline muted preload="auto"></video><canvas></canvas>';
     this.v = $('video', stage); this.c = $('canvas', stage); this.c.width = sw.W; this.c.height = sw.H; this.ctx = this.c.getContext('2d');
     stage.classList.toggle('mir', !!sw.mir); stage.style.aspectRatio = sw.W + ' / ' + sw.H;
-    this.t = sw.ph.take; this.rate = 0.3; this.playing = false; this.end = sw.dur; this.skel = true; this.noVid = true; this.buf = new Float32Array(99);
-    if (sw.video) { try { this.url = URL.createObjectURL(sw.video); this.v.src = this.url; this.noVid = false; this.v.addEventListener('error', () => this.dropVideo()); } catch (e) {} }
+    this.off = sw.off || 0; this.t = sw.ph.take; this.rate = 0.3; this.playing = false; this.end = sw.dur; this.skel = true; this.noVid = true; this.buf = new Float32Array(99);
+    if (sw.video) { try { this.url = URL.createObjectURL(sw.video); this.v.src = this.url; this.noVid = false; this.v.addEventListener('error', () => this.dropVideo()); this.v.addEventListener('loadedmetadata', () => { if (!this.playing) this.seek(this.t); }); } catch (e) {} }
     if (this.noVid) this.v.style.display = 'none';
     this.last = performance.now(); this.alive = true;
     const loop = now => { if (!this.alive) return; this.tick(now); requestAnimationFrame(loop); }; requestAnimationFrame(loop);
   }
   dropVideo() { this.noVid = true; this.v.style.display = 'none'; }
-  get time() { return this.noVid ? this.t : this.v.currentTime; }
-  seek(t) { t = clamp(t, 0, this.sw.dur); this.t = t; if (!this.noVid) { try { this.v.currentTime = t; } catch (e) {} } }
+  get time() { return this.noVid ? this.t : this.v.currentTime - this.off; }
+  seek(t) { t = clamp(t, 0, this.sw.dur); this.t = t; if (!this.noVid) { try { this.v.currentTime = t + this.off; } catch (e) {} } }
   play(from, to) {
     if (from != null) this.seek(from); this.end = to == null ? this.sw.dur : Math.min(to, this.sw.dur); this.playing = true;
     if (!this.noVid) { this.v.playbackRate = this.rate; const p = this.v.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') this.dropVideo(); }); }
   }
   pause() { this.playing = false; if (!this.noVid) { try { this.v.pause(); } catch (e) {} } }
-  setRate(r) { this.rate = r; if (!this.noVid) this.v.playbackRate = r; }
+  setRate(r) { r = Math.min(1, r * (this.sw.slow || 1)); this.rate = r; if (!this.noVid) this.v.playbackRate = r; }
   tick(now) {
     const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     if (this.playing) { if (this.noVid) this.t += dt * this.rate; if (this.time >= this.end - 0.004 || (!this.noVid && this.v.ended)) { this.pause(); if (this.onend) this.onend(); } }
     this.draw(this.time); if (this.ontime) this.ontime(this.time);
   }
-  poseAt(t) {
-    const d = this.sw.data, n = this.sw.n; let lo = 0, hi = n - 1;
-    while (lo < hi - 1) { const m = (lo + hi) >> 1; if (d[m * STR] <= t) lo = m; else hi = m; }
-    const t0 = d[lo * STR], t1 = d[hi * STR], k = t1 > t0 ? clamp((t - t0) / (t1 - t0), 0, 1) : 0;
-    for (let j = 0; j < 99; j++) this.buf[j] = d[lo * STR + 1 + j] * (1 - k) + d[hi * STR + 1 + j] * k;
-    return this.buf;
-  }
+  poseAt(t) { return poseAt(this.sw, t, this.buf); }
   draw(t) {
     const {ctx, sw} = this, W = sw.W, H = sw.H; ctx.clearRect(0, 0, W, H);
     if (this.noVid) { ctx.fillStyle = '#0a2a1f'; ctx.fillRect(0, 0, W, H); }
@@ -535,12 +557,14 @@ class Player {
       }
       drawSkeleton(ctx, this.poseAt(ts), H, sw.hand);
     }
+    drawBall(ctx, sw, t);
   }
   destroy() { this.alive = false; this.pause(); if (this.url) { try { this.v.removeAttribute('src'); this.v.load(); } catch (e) {} URL.revokeObjectURL(this.url); } this.stage.innerHTML = ''; }
 }
 
 /* ---------- camera, pose model, recorder ---------- */
 const cam = $('#cam'), liveCv = $('#liveCv'), liveCtx = liveCv.getContext('2d');
+let srcMode = 'cam', fileBlob = null, fileUrl = null, fileK = 1, fileFound = 0, bigTold = false;
 let stream = null, landmarker = null, landmarkerKind = null, running = false, paused = false, wake = null, lastVT = -1, sessionN = 0, repeatKey = null, repeatN = 0, lastHint = 0, player = null;
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision';
 const MODEL = k => `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_${k}/float16/1/pose_landmarker_${k}.task`;
@@ -555,14 +579,18 @@ async function loadPose() {
   try { landmarker = await make('GPU'); } catch (e) { landmarker = await make('CPU'); }
   landmarkerKind = settings.model;
 }
-function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } cam.srcObject = null; }
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } cam.srcObject = null; cam.onended = null;
+  if (fileUrl) { try { cam.pause(); cam.removeAttribute('src'); cam.load(); } catch (e) {} URL.revokeObjectURL(fileUrl); fileUrl = null; }
+}
 async function startCamera() {
   stopCamera();
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw Object.assign(new Error('nocam'), {name: 'NoCamera'});
-  const want = {audio: false, video: {facingMode: settings.facing, width: {ideal: 1280}, height: {ideal: 720}, frameRate: {ideal: 60}}};
+  const hd = settings.facing === 'environment';
+  const want = {audio: false, video: {facingMode: settings.facing, width: {ideal: hd ? 1920 : 1280}, height: {ideal: hd ? 1080 : 720}, frameRate: {ideal: 60}}};
   try { stream = await navigator.mediaDevices.getUserMedia(want); }
   catch (e) { if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw e; stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: settings.facing}}); }
-  cam.srcObject = stream; await cam.play().catch(() => {});
+  cam.autoplay = true; cam.srcObject = stream; await cam.play().catch(() => {});
   $('#liveStage').classList.toggle('mir', settings.facing === 'user' && settings.mirror);
   lastVT = -1; det.reset();
 }
@@ -572,7 +600,7 @@ const Rec = {
     this.discard(); if (typeof MediaRecorder === 'undefined' || !stream) return;
     try {
       const mime = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } }) || '';
-      const mr = new MediaRecorder(stream, Object.assign({videoBitsPerSecond: 2500000}, mime ? {mimeType: mime} : {})); const chunks = [];
+      const mr = new MediaRecorder(stream, Object.assign({videoBitsPerSecond: settings.ball ? 6000000 : 2500000}, mime ? {mimeType: mime} : {})); const chunks = [];
       mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       mr.start(); this.mr = mr; this.chunks = chunks; this.t0 = t; this.mime = mr.mimeType || mime || 'video/mp4'; this.active = true;
     } catch (e) { this.mr = null; this.active = false; }
@@ -590,28 +618,191 @@ const Rec = {
   discard() { const mr = this.mr; this.mr = null; this.active = false; if (mr && mr.state !== 'inactive') { mr.ondataavailable = null; mr.onstop = null; try { mr.stop(); } catch (e) {} } }
 };
 
+/* ---------- ball finder ---------- */
+// Works on the saved clip after the swing. The ball is the small bright spot near the feet that is
+// there at the top of the backswing and gone after impact; its flight is the chain of bright spots
+// that then appear in a straight line away from that spot.
+const Grab = {
+  async open(blob, cw, ch) {
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
+    v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none';
+    document.body.appendChild(v);
+    const url = URL.createObjectURL(blob);
+    const wait = (name, ms) => new Promise(res => { let d = false; const fin = ok => { if (!d) { d = true; v.removeEventListener(name, on); res(ok); } }, on = () => fin(true); v.addEventListener(name, on); setTimeout(() => fin(false), ms); });
+    const close = () => { try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} v.remove(); URL.revokeObjectURL(url); };
+    const ready = wait('loadeddata', 12000); v.src = url; v.load();
+    if (!(await ready)) { close(); return null; }
+    try { await v.play(); v.pause(); } catch (e) {}
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch; const ctx = c.getContext('2d', {willReadFrequently: true});
+    return {
+      async frame(t) {
+        if (Math.abs(v.currentTime - t) > 0.0005) { const s = wait('seeked', 4000); v.currentTime = t; await s; await new Promise(r => requestAnimationFrame(r)); }
+        ctx.drawImage(v, 0, 0, cw, ch); return ctx.getImageData(0, 0, cw, ch).data;
+      },
+      close
+    };
+  }
+};
+function lumaOf(d, n) { const y = new Uint8Array(n); for (let i = 0, j = 0; i < n; i++, j += 4) y[i] = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8; return y; }
+// Connected bright regions of val(i) > thr inside a rectangle. Returns centroid, size and box of each.
+function blobs(cw, x0, y0, x1, y1, val, thr, maxArea) {
+  const w = x1 - x0, h = y1 - y0, out = []; if (w <= 0 || h <= 0) return out;
+  const seen = new Uint8Array(w * h), stack = [];
+  for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+    const s0 = yy * w + xx; if (seen[s0]) continue; seen[s0] = 1;
+    if (val((y0 + yy) * cw + x0 + xx) <= thr) continue;
+    let n = 0, sx = 0, sy = 0, sv = 0, bx0 = xx, bx1 = xx, by0 = yy, by1 = yy; stack.push(s0);
+    while (stack.length) {
+      const s = stack.pop(), px = s % w, py = (s - px) / w, v = val((y0 + py) * cw + x0 + px);
+      n++; sx += px; sy += py; sv += v; if (px < bx0) bx0 = px; if (px > bx1) bx1 = px; if (py < by0) by0 = py; if (py > by1) by1 = py;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const qx = px + dx, qy = py + dy; if (qx < 0 || qy < 0 || qx >= w || qy >= h) continue;
+        const q = qy * w + qx; if (seen[q]) continue; seen[q] = 1;
+        if (val((y0 + qy) * cw + x0 + qx) > thr) stack.push(q);
+      }
+    }
+    if (n <= maxArea) out.push({x: x0 + sx / n, y: y0 + sy / n, n, v: sv / n, w: bx1 - bx0 + 1, h: by1 - by0 + 1});
+  }
+  return out;
+}
+function segDist(p, a, b) { const vx = b.x - a.x, vy = b.y - a.y, l = vx * vx + vy * vy, k = l ? clamp(((p.x - a.x) * vx + (p.y - a.y) * vy) / l, 0, 1) : 0; return Math.hypot(p.x - a.x - vx * k, p.y - a.y - vy * k); }
+const Ball = {
+  q: Promise.resolve(),
+  find(sw) {
+    sw.ballBusy = true; if (this.onchange) this.onchange(sw);
+    this.q = this.q.then(() => this.run(sw)).catch(() => ({ok: false, why: 'error'})).then(async r => {
+      sw.ball = r; sw.ballBusy = false;
+      if (swings.includes(sw)) await save(sw);
+      if (this.onchange) this.onchange(sw);
+    });
+    return this.q;
+  },
+  async run(sw) {
+    if (!sw.video) return {ok: false, why: 'novideo'};
+    const off = sw.off || 0, k = sw.slow || 1, face = sw.angle === 'face';
+    const s = Math.min(1, 1600 / Math.max(sw.W, sw.H)), cw = Math.round(sw.W * s), ch = Math.round(sw.H * s), N = cw * ch;
+    const step = k > 1 ? 1 / 30 : 1 / 60;
+    const tLo = Math.max(0, sw.ph.top - 0.1 * k), tHi = Math.min(sw.dur - 0.02, sw.ph.imp + 0.4 * k);
+    if (tHi < sw.ph.imp + 0.12 * k || tHi - tLo < 0.2 * k) return {ok: false, why: 'short'};
+    const g = await Grab.open(sw.video, cw, ch); if (!g) return {ok: false, why: 'video'};
+    try {
+      // body at address, in analysis pixels
+      const A = poseAt(sw, sw.ph.take, new Float32Array(99)), P = i => ({x: A[i * 3] * s, y: A[i * 3 + 1] * s});
+      const sh = mid(P(11), P(12)), hip = mid(P(23), P(24)), T = dist(sh, hip); if (!(T > 6)) return {ok: false, why: 'noball'};
+      const cmT = (settings.height || 175) * 0.29, pxCm = T / cmT * (face ? 1.25 : 1), dExp = Math.max(3, 4.27 * pxCm);
+      const lead = sw.hand === 'L' ? 28 : 27, trail = sw.hand === 'L' ? 27 : 28, la = P(lead), ta = P(trail), ankY = Math.max(la.y, ta.y);
+      const feet = [27, 28, 29, 30, 31, 32].map(P);
+      let dir, x0, x1, y0, y1, ex, ey, sig;
+      if (face) {
+        dir = Math.sign(la.x - ta.x) || 1;
+        x0 = Math.min(la.x, ta.x) - 0.7 * T; x1 = Math.max(la.x, ta.x) + 0.7 * T; y0 = ankY - 0.15 * T; y1 = ankY + 1.3 * T;
+        ex = (la.x + ta.x) / 2 + 0.15 * (la.x - ta.x); ey = ankY + 0.5 * T; sig = 0.7 * T;
+      } else {
+        dir = Math.sign(mid(P(15), P(16)).x - hip.x) || 1;
+        const toe = dir > 0 ? Math.max(...feet.map(f => f.x)) : Math.min(...feet.map(f => f.x));
+        const a = toe + dir * 0.3 * T, b = toe + dir * 3.2 * T; x0 = Math.min(a, b); x1 = Math.max(a, b); y0 = ankY - 0.6 * T; y1 = ankY + 0.7 * T;
+        ex = toe + dir * 1.5 * T; ey = ankY; sig = T;
+      }
+      x0 = clamp(Math.floor(x0), 0, cw); x1 = clamp(Math.ceil(x1), 0, cw); y0 = clamp(Math.floor(y0), 0, ch); y1 = clamp(Math.ceil(y1), 0, ch);
+      const dP = await g.frame(tLo + off), yP = lumaOf(dP, N), yQ = lumaOf(await g.frame(tHi + off), N);
+      // 1. the ball: bright, colourless, ball-sized, there before and gone after
+      const white = i => { const j = i * 4, r = dP[j], gg = dP[j + 1], b = dP[j + 2]; return Math.max(r, gg, b) - Math.min(r, gg, b) < 70 ? yP[i] - yQ[i] : 0; };
+      let best = null;
+      for (const c of blobs(cw, x0, y0, x1, y1, white, 26, 40 * dExp * dExp)) {
+        const d = 2 * Math.sqrt(c.n / Math.PI), asp = c.w / c.h, fill = c.n / (c.w * c.h);
+        if (d < Math.max(2.5, 0.4 * dExp) || d > 2.6 * dExp || asp < 0.5 || asp > 2 || fill < 0.45) continue;
+        if (feet.some(f => dist(f, c) < 0.2 * T)) continue;
+        const lg = Math.log(d / dExp), score = c.v * fill * Math.exp(-lg * lg / 0.5) * Math.exp(-((c.x - ex) ** 2 + (c.y - ey) ** 2) / (2 * sig * sig));
+        if (!best || score > best.score) best = Object.assign(c, {score, d});
+      }
+      if (!best || best.score < 6) return {ok: false, why: 'noball'};
+      const bx = best.x, by = best.y, r = best.d / 2, rr = Math.max(1.5, r * 0.8);
+      const disc = []; for (let yy = Math.floor(by - rr); yy <= by + rr; yy++) for (let xx = Math.floor(bx - rr); xx <= bx + rr; xx++) if (xx >= 0 && yy >= 0 && xx < cw && yy < ch && (xx - bx) ** 2 + (yy - by) ** 2 <= rr * rr) disc.push(yy * cw + xx);
+      let c0 = 0; for (const i of disc) c0 += yP[i] - yQ[i]; c0 /= disc.length || 1;
+      if (c0 < 20) return {ok: false, why: 'noball'};
+      // 2. when it left: last frame it is still there, by halving the gap
+      const frames = new Map(), lum = async i => { if (!frames.has(i)) frames.set(i, lumaOf(await g.frame(tLo + i * step + off), N)); return frames.get(i); };
+      const here = y => { let a = 0; for (const i of disc) a += y[i] - yQ[i]; return a / disc.length > 0.5 * c0; };
+      let lo = 0, hi = Math.round((tHi - tLo) / step);
+      while (hi - lo > 1) { const m = (lo + hi) >> 1; if (here(await lum(m))) lo = m; else hi = m; frames.delete(m); }
+      const tGone = tLo + hi * step, out = {ok: true, x: bx / s, y: by / s, r: r / s, tGone, tImp: tGone - step / 2, pts: [], n: 0, ux: 0, uy: 0};
+      if (Math.abs(out.tImp - sw.ph.imp) > 0.3 * k) return {ok: false, why: 'noball'};
+      // 3. where it went: bright spots that were in neither reference frame
+      const bg = new Uint8Array(N); for (let i = 0; i < N; i++) bg[i] = yP[i] > yQ[i] ? yP[i] : yQ[i];
+      const nF = k > 1 ? 16 : 10, thr = Math.max(12, 0.18 * c0), aMin = Math.max(4, 0.4 * Math.PI * r * r), aMax = 60 * Math.PI * r * r;
+      const rx0 = face ? (dir > 0 ? Math.floor(bx + 1.5 * r) : 0) : clamp(Math.floor(bx - 3.5 * T), 0, cw), rx1 = face ? (dir > 0 ? cw : Math.ceil(bx - 1.5 * r)) : clamp(Math.ceil(bx + 3.5 * T), 0, cw);
+      const ry1 = clamp(Math.ceil(face ? by + 0.3 * T : by - 1.5 * r), 0, ch), buf = new Float32Array(99), cands = [], times = [];
+      for (let f = 0; f < nF; f++) {
+        const t = tLo + (hi + f) * step; if (t > sw.dur - 0.01) break;
+        const y = lumaOf(await g.frame(t + off), N), pose = poseAt(sw, t, buf), J = i => ({x: pose[i * 3] * s, y: pose[i * 3 + 1] * s});
+        const list = [];
+        for (const c of blobs(cw, rx0, 0, rx1, ry1, i => y[i] - bg[i], thr, aMax)) {
+          if (c.n < aMin) continue;
+          const dx = (c.x - bx) * (face ? dir : 1), dy = by - c.y, far = Math.hypot(dx, dy); if (far < 2 * r) continue;
+          const el = deg(Math.atan2(dy, dx)); if (face ? (el < -10 || el > 70) : (el < 45 || el > 135)) continue;
+          if (BONES.some(([a, b]) => segDist(c, J(a), J(b)) < 0.18 * T) || dist(c, J(0)) < 0.3 * T) continue;
+          list.push({x: c.x, y: c.y, e: c.v * c.n, f});
+        }
+        list.sort((a, b) => b.e - a.e); cands.push(list.slice(0, 8)); times.push(t);
+      }
+      const rho = face ? 1 : 0.8; let chain = null, score = 0;
+      for (let a = 0; a < Math.min(4, cands.length - 1); a++) for (let b = a + 1; b <= Math.min(a + 2, cands.length - 1); b++) for (const ci of cands[a]) for (const cj of cands[b]) {
+        let ux = (cj.x - ci.x) / (b - a), uy = (cj.y - ci.y) / (b - a), sp = Math.hypot(ux, uy); if (sp < 0.75 * 2 * r) continue;
+        const ox = ci.x - bx, oy = ci.y - by, od = Math.hypot(ox, oy); if ((ox * ux + oy * uy) / (od * sp) < (face ? 0.94 : 0.85)) continue;
+        const t0 = a - od / sp; if (face ? (t0 < -1.4 || t0 > 0.4) : (t0 < -3 || t0 > 0.6)) continue;
+        const ch2 = [ci, cj]; let last = cj, lf = b, miss = 0;
+        for (let f = b + 1; f < cands.length && miss < 2; f++) {
+          const gap = f - lf, px = last.x + ux * rho * gap, py = last.y + uy * rho * gap, tol = (face ? 0.35 : 0.5) * sp * gap + 2 * r; let pick = null, pd = tol;
+          for (const c of cands[f]) { const d = Math.hypot(c.x - px, c.y - py); if (d < pd && (c.x - last.x) * ux + (c.y - last.y) * uy > 0) { pd = d; pick = c; } }
+          if (!pick) { miss++; continue; }
+          ux = (pick.x - last.x) / gap; uy = (pick.y - last.y) / gap; sp = Math.hypot(ux, uy); last = pick; lf = f; miss = 0; ch2.push(pick); if (sp < 0.5 * r) break;
+        }
+        const sc = ch2.length * 1e4 + Math.hypot(cj.x - ci.x, cj.y - ci.y) / (b - a);
+        if (sc > score) { score = sc; chain = ch2; }
+      }
+      if (!chain) return out;
+      if (face && chain.length >= 3) { // the first spot is often the clubhead sitting on top of the ball: drop it if it doesn't fit the spacing of the rest
+        const gap = i => Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (chain[i].f - chain[i - 1].f), rest = []; for (let i = 2; i < chain.length; i++) rest.push(gap(i));
+        rest.sort((x, y) => x - y); const m = rest[rest.length >> 1]; if (Math.abs(gap(1) - m) > 0.2 * m) chain.shift();
+      }
+      // direction from the ball through the first few spots
+      let vx = 0, vy = 0; for (const c of chain.slice(0, 4)) { vx += c.x - bx; vy += c.y - by; } const vl = Math.hypot(vx, vy) || 1;
+      out.ux = vx / vl; out.uy = vy / vl; out.n = chain.length; out.pts = chain.map(c => ({t: times[c.f], x: c.x / s, y: c.y / s}));
+      if (face) {
+        out.launch = Math.round(deg(Math.atan2(-vy, vx * dir)));
+        const sp = []; for (let i = 1; i < chain.length; i++) sp.push(Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (chain[i].f - chain[i - 1].f));
+        sp.sort((a, b) => a - b); const mph = sp[sp.length >> 1] / pxCm / 100 / (step / k) * 2.237;
+        if (mph >= 15 && mph <= 210) out.mph = Math.round(mph / 5) * 5;
+      } else out.dirDeg = Math.round(deg(Math.atan2(vx, -vy)));
+      return out;
+    } finally { g.close(); }
+  }
+};
+
 /* ---------- live tracking ---------- */
 const stateEl = $('#state');
 let hudKey = '';
 function hud(text, cls) { const k = text + '|' + cls; if (k === hudKey) return; hudKey = k; stateEl.textContent = text; stateEl.className = cls || ''; }
 const det = new Detector((type, f) => {
-  if (type === 'address') { Rec.start(f.t); Snd.beep(0, 880, 0.09); }
+  if (type === 'address') { Rec.start(f.t); if (srcMode === 'cam') Snd.beep(0, 880, 0.09); }
   else if (type === 'refresh') Rec.start(f.t);
   else if (type === 'cancel') Rec.discard();
   else if (type === 'swing') onSwing(f);
 });
-function hint(text) { const now = performance.now(); if (now - lastHint < 20000) return; lastHint = now; Voice.say(text); }
+function hint(text) { if (srcMode === 'file') return; const now = performance.now(); if (now - lastHint < 20000) return; lastHint = now; Voice.say(text); }
 function onResult(res, t) {
+  const file = srcMode === 'file'; if (file) t /= fileK;
   const W = cam.videoWidth, H = cam.videoHeight;
   if (liveCv.width !== W || liveCv.height !== H) { liveCv.width = W; liveCv.height = H; }
   liveCtx.clearRect(0, 0, W, H);
   const lm = res && res.landmarks && res.landmarks[0];
-  if (!lm) { if (det.state === 'settle') hud('Step into the picture'); return; }
+  if (!lm) { if (det.state === 'settle') hud(file ? 'Looking for a swing…' : 'Step into the picture'); return; }
   const f = makeFrame(lm, res.worldLandmarks && res.worldLandmarks[0], t, W, H);
   det.push(f);
   drawSkeleton(liveCtx, f.p, H, settings.hand);
   const a = f.a, s = det.state;
-  if (s === 'address') { const h = headPt(f); liveCtx.strokeStyle = '#ffd23f'; liveCtx.lineWidth = Math.max(3, H / 200); liveCtx.beginPath(); liveCtx.arc(h.x, h.y, 0.19 * a.torso, 0, 7); liveCtx.stroke(); hud('Locked on. Swing when ready.', 'go'); }
+  if (file && s !== 'back' && s !== 'down' && s !== 'follow') hud(s === 'address' ? 'Found your address…' : 'Looking for a swing…', s === 'address' ? 'go' : '');
+  else if (s === 'address') { const h = headPt(f); liveCtx.strokeStyle = '#ffd23f'; liveCtx.lineWidth = Math.max(3, H / 200); liveCtx.beginPath(); liveCtx.arc(h.x, h.y, 0.19 * a.torso, 0, 7); liveCtx.stroke(); hud('Locked on. Swing when ready.', 'go'); }
   else if (s === 'back' || s === 'down' || s === 'follow') hud('Swinging…', 'go');
   else if (s === 'settle') {
     if (a.vis < 0.5) hud('Step into the picture');
@@ -633,8 +824,40 @@ function frameLoop(now, meta) {
 function schedule() { if (cam.requestVideoFrameCallback) cam.requestVideoFrameCallback(frameLoop); else requestAnimationFrame(frameLoop); }
 async function wakeOn() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
 function liveError(title, body) { const el = $('#liveErr'); el.innerHTML = `<div><h2>${esc(title)}</h2><p style="margin-top:12px">${esc(body)}</p><button class="btn" id="errClose" style="margin-top:8px">Back</button></div>`; el.hidden = false; $('#errClose').onclick = stopTracking; }
-function liveButtons() { $('#btnAngle').textContent = settings.angle === 'face' ? 'Face-on' : 'Down the line'; $('#btnVoice').textContent = settings.voice ? 'Voice on' : 'Voice off'; }
+function liveButtons() { $('#btnFlip').hidden = srcMode === 'file'; $('#btnAngle').textContent = settings.angle === 'face' ? 'Face-on' : 'Down the line'; $('#btnVoice').textContent = settings.voice ? 'Voice on' : 'Voice off'; }
+function resume() {
+  paused = false; det.reset(); hudKey = '';
+  if (srcMode === 'file' && running) { if (cam.ended) finishFile(); else cam.play().catch(() => {}); }
+}
+async function startFile(file) {
+  Snd.unlock(); stopCamera();
+  srcMode = 'file'; fileBlob = file; fileK = settings.slow || 1; fileFound = 0;
+  $('#live').hidden = false; $('#liveErr').hidden = true; $('#liveStage').classList.remove('mir'); liveButtons(); hud('Opening video…', 'busy'); $('#count').textContent = sessionN;
+  const bad = () => liveError('Couldn\'t open that video', 'This browser could not play the file. Try a clip filmed on this phone, or trim it in Photos first and pick the trimmed copy.');
+  try {
+    fileUrl = URL.createObjectURL(file); cam.autoplay = false;
+    const ok = await new Promise(res => { const fin = v => { cam.onloadeddata = cam.onerror = null; res(v); }; cam.onloadeddata = () => fin(true); cam.onerror = () => fin(false); setTimeout(() => fin(false), 20000); cam.src = fileUrl; cam.load(); });
+    if (!ok || !cam.videoWidth) return bad();
+  } catch (e) { return bad(); }
+  cam.pause(); try { cam.currentTime = 0; } catch (e) {}
+  hud('Loading body tracking…', 'busy');
+  try { await loadPose(); } catch (e) { stopCamera(); return liveError('Body tracking didn\'t load', 'It needs a connection the first time to download the tracking model (about 6 MB). Check your signal and try again.'); }
+  if (srcMode !== 'file' || !fileUrl) return;
+  wakeOn(); running = true; paused = false; lastVT = -1; det.reset(); cam.onended = fileEnded; schedule();
+  cam.playbackRate = 1; cam.play().catch(() => {});
+}
+function fileEnded() {
+  if (!running || srcMode !== 'file') return;
+  if (!paused && det.state === 'follow') det.finish(false);
+  if (!paused) finishFile();
+}
+function finishFile() {
+  const n = fileFound;
+  if (!n) { paused = true; return liveError('No swing found in that video', 'It needs your whole body in the picture and about a second of you standing still over the ball before the swing. If the clip is slo-mo, check the speed setting under the upload button matches it.'); }
+  stopTracking(); showTab('swings'); toast(n === 1 ? 'One swing found and saved' : n + ' swings found and saved');
+}
 async function startTracking() {
+  srcMode = 'cam';
   Snd.unlock(); Voice.say('Starting.');
   $('#live').hidden = false; $('#liveErr').hidden = true; liveButtons(); hud('Starting camera…', 'busy'); $('#count').textContent = sessionN;
   try { await startCamera(); }
@@ -650,19 +873,26 @@ async function startTracking() {
 function stopTracking() {
   running = false; paused = false; Rec.discard(); stopCamera(); Voice.stop(); closeReplay(true);
   try { wake && wake.release(); } catch (e) {} wake = null;
-  $('#live').hidden = true; hudKey = ''; renderAll();
+  $('#live').hidden = true; hudKey = ''; srcMode = 'cam'; fileBlob = null; renderAll();
 }
 document.addEventListener('visibilitychange', () => {
   if (!running) return;
-  if (document.hidden) { Rec.discard(); det.reset(); } else { cam.play().catch(() => {}); wakeOn(); if (!paused) det.reset(); }
+  const file = srcMode === 'file';
+  if (document.hidden) { Rec.discard(); det.reset(); if (file) cam.pause(); } else { if (!(file && (paused || cam.ended))) cam.play().catch(() => {}); wakeOn(); if (!paused) det.reset(); }
 });
 
 function thumbOf() { try { const W = cam.videoWidth, H = cam.videoHeight, c = document.createElement('canvas'); c.width = 108; c.height = Math.round(108 * H / W); const x = c.getContext('2d'); if ($('#liveStage').classList.contains('mir')) { x.translate(c.width, 0); x.scale(-1, 1); } x.drawImage(cam, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.6); } catch (e) { return ''; } }
-function pack(ev, t0, blob, res, thumb) {
+function pack(ev, t0, blob, res, thumb, k = 1, off = 0) {
   const fr = ev.frames.filter(f => f.t - t0 >= 0), n = fr.length, data = new Float32Array(n * STR);
-  fr.forEach((f, i) => { data[i * STR] = f.t - t0; data.set(f.p, i * STR + 1); });
+  fr.forEach((f, i) => { data[i * STR] = (f.t - t0) * k; data.set(f.p, i * STR + 1); });
   return {id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), at: Date.now(), angle: settings.angle, club: settings.club, hand: settings.hand, W: cam.videoWidth, H: cam.videoHeight, mir: $('#liveStage').classList.contains('mir'), n, data,
-    dur: n ? data[(n - 1) * STR] : 0, ph: {take: Math.max(0, ev.tTake - t0), top: ev.tTop - t0, imp: ev.tImp - t0, end: fr.length ? fr[n - 1].t - t0 : 0}, res, video: blob, thumb, star: false};
+    dur: n ? data[(n - 1) * STR] : 0, ph: {take: Math.max(0, ev.tTake - t0) * k, top: (ev.tTop - t0) * k, imp: (ev.tImp - t0) * k, end: fr.length ? (fr[n - 1].t - t0) * k : 0}, res, video: blob, thumb, star: false, slow: k, off, src: srcMode};
+}
+async function save(sw) {
+  const lite = () => Object.assign({}, sw, {video: null, ballBusy: false});
+  if (sw.big || !sw.video) return DB.put(lite());
+  const ok = await DB.put(Object.assign({}, sw, {ballBusy: false})); if (ok) return ok;
+  sw.big = true; return DB.put(lite());
 }
 async function prune() {
   const loose = swings.filter(s => !s.star);
@@ -679,20 +909,24 @@ function spoken(sw, n) {
 }
 async function onSwing(ev) {
   paused = true; hud('Got it. Checking…', 'busy');
-  const t0 = Rec.active ? Rec.t0 : ev.frames[0].t, thumb = thumbOf();
-  const blob = await Rec.stop();
+  const file = srcMode === 'file', k = file ? fileK : 1;
+  if (file) cam.pause();
+  const t0 = !file && Rec.active ? Rec.t0 : ev.frames[0].t, thumb = thumbOf();
+  const blob = file ? fileBlob : await Rec.stop();
   if (!running) return;
   let sw;
-  try { sw = pack(ev, t0, blob, analyse(ev, {angle: settings.angle, hand: settings.hand, height: settings.height, club: settings.club}), thumb); }
-  catch (e) { paused = false; det.reset(); return; }
+  try { sw = pack(ev, t0, blob, analyse(ev, {angle: settings.angle, hand: settings.hand, height: settings.height, club: settings.club}), thumb, k, file ? t0 * k : 0); }
+  catch (e) { resume(); return; }
+  if (file) { fileFound++; if (blob && blob.size > 60e6) { sw.big = true; if (!bigTold) { bigTold = true; toast('Long video: the checks are saved, the video itself is not'); } } }
   swings.unshift(sw); sessionN++; $('#count').textContent = sessionN;
-  const ok = await DB.put(sw); if (!ok && blob) { const lite = Object.assign({}, sw, {video: null}); await DB.put(lite); }
+  await save(sw);
   prune();
+  if (settings.ball) Ball.find(sw);
   const key = sw.res.viewHint || sw.res.lowConf ? null : sw.res.priority;
   if (key && key === repeatKey) repeatN++; else { repeatKey = key; repeatN = key ? 1 : 0; }
   Voice.say(spoken(sw, sessionN));
   if (settings.replay) openReplay(sw);
-  else { const h = headline(sw), b = $('#banner'); b.innerHTML = `<div class="fix ${h.cls}"><h3>${esc(h.head)}</h3><p>${esc(h.sub)}</p></div>`; b.hidden = false; setTimeout(() => b.hidden = true, 6000); paused = false; det.reset(); }
+  else { const h = headline(sw), b = $('#banner'); b.innerHTML = `<div class="fix ${h.cls}"><h3>${esc(h.head)}</h3><p>${esc(h.sub)}</p></div>`; b.hidden = false; setTimeout(() => b.hidden = true, 6000); resume(); }
 }
 let rpTimer = null, rpSwing = null;
 function openReplay(sw) {
@@ -708,7 +942,7 @@ function openReplay(sw) {
 function closeReplay(silent) {
   clearTimeout(rpTimer); if (player) { player.destroy(); player = null; }
   $('#replay').hidden = true; rpSwing = null;
-  if (running && !silent) { paused = false; det.reset(); hudKey = ''; }
+  if (running && !silent) resume();
 }
 $('#rpNext').onclick = () => closeReplay();
 $('#rpDetail').onclick = () => { const sw = rpSwing; clearTimeout(rpTimer); if (player) player.pause(); Voice.stop(); openDetail(sw, () => { if (running) closeReplay(); }); };
@@ -720,6 +954,28 @@ const dayLabel = t => { const k = dayKey(t); if (k === dayKey(Date.now())) retur
 const angleName = a => a === 'face' ? 'Face-on' : 'Down the line';
 function boardsHTML(sw) { return sw.res.checks.map(c => `<div class="board ${c.st}"><i></i><div><b>${esc(c.label)}</b><small>Aim for ${esc(c.target)}</small></div><div class="val">${esc(c.shown)}</div></div>`).join(''); }
 function speedChips(cur) { return [0.1, 0.25, 0.5, 1].map(r => `<button data-rate="${r}" aria-pressed="${r === cur}">${r === 1 ? 'Full speed' : r + '×'}</button>`).join(''); }
+function ballHTML(sw) {
+  const b = sw.ball, row = (label, small, val) => `<div class="board na"><i></i><div><b>${label}</b><small>${small}</small></div><div class="val">${val}</div></div>`;
+  if (sw.ballBusy) return '<h3>Ball</h3><p class="dim" style="margin-top:8px">Looking for the ball…</p>';
+  if (!b) return sw.video ? '<h3>Ball</h3><p class="dim small" style="margin-top:8px">This swing hasn\'t been checked for the ball.</p><button class="btn sm" id="dBallGo">Look for the ball</button>' : '';
+  if (!b.ok) return `<h3>Ball</h3><p class="dim small" style="margin-top:8px">${b.why === 'novideo' ? 'No video was saved for this swing, so the ball can\'t be traced.' : b.why === 'short' ? 'The video stops too soon after impact to see the ball leave.' : 'Couldn\'t pick out the ball on this swing. It needs a white ball in clear view on the ground, good light and a still phone.'}</p>`;
+  let h = '<h3>Ball</h3>';
+  if (!b.n) return h + '<p class="dim small" style="margin-top:8px">Found the ball and saw it leave, but it was out of the picture too fast to trace. Slo-mo video gives the camera more frames to catch it.</p>';
+  if (sw.angle === 'face') {
+    h += row('Launch angle', 'How steeply the ball left the ground', b.launch + '°');
+    h += b.mph ? row('Ball speed', `Rough, from ${b.n} sightings of the ball`, '≈' + b.mph + ' mph') : '';
+  } else {
+    const d = b.dirDeg, a = Math.abs(d);
+    h += row('Start direction', 'Against straight up the picture', a < 3 ? 'Straight' : a + '° ' + (d > 0 ? 'right' : 'left'));
+  }
+  return h + `<p class="small dim" style="margin-top:10px">Traced from ${b.n} video frames after impact, so treat these as estimates.${sw.angle === 'face' ? '' : ' The direction only means something if the phone points straight down your target line.'}</p>`;
+}
+function renderBall(sw) {
+  const el = $('#dBall'); if (!el || !dPlayer || dPlayer.sw !== sw) return;
+  el.innerHTML = ballHTML(sw); el.hidden = !el.innerHTML;
+  const go = $('#dBallGo'); if (go) go.onclick = () => Ball.find(sw);
+}
+Ball.onchange = sw => renderBall(sw);
 let dPlayer = null, dClose = null;
 function openDetail(sw, onClose) {
   dClose = onClose || null; const el = $('#detail .inner'), h = headline(sw), p = prio(sw), dr = p && !sw.res.viewHint && !sw.res.lowConf ? DRILLS[p.drill] : null;
@@ -733,9 +989,10 @@ function openDetail(sw, onClose) {
     <div class="block fix ${h.cls}"><h3>${esc(h.head)}</h3><p>${esc(h.sub)}</p>${dr ? `<button class="btn sm" id="dDrill">Drill: ${esc(dr.name)}</button>` : ''}</div>
     <div class="block"><div class="spread"><h3>All checks</h3><span class="dim">${sw.res.passed} of ${sw.res.total} in range</span></div>${boardsHTML(sw)}
       <p class="small dim" style="margin-top:10px">Backswing ${sw.res.back.toFixed(2)} s, downswing ${sw.res.down.toFixed(2)} s. ${sw.video ? '' : 'No video was saved for this swing, so the replay shows the tracked skeleton only.'}</p></div>
+    <div class="block" id="dBall"></div>
     <div class="block row"><button class="btn" id="dStar">${sw.star ? 'Unpin' : 'Pin to keep'}</button><button class="btn danger" id="dDel">Delete swing</button></div>`;
   $('#detail').hidden = false; $('#detail').scrollTop = 0;
-  dPlayer = new Player($('#dStage'), sw); dPlayer.setRate(0.25);
+  dPlayer = new Player($('#dStage'), sw); dPlayer.setRate(0.25); renderBall(sw);
   const scrub = $('#dScrub'), play = $('#dPlay'); let dragging = false;
   dPlayer.ontime = t => { if (!dragging) scrub.value = t; };
   dPlayer.onend = () => play.textContent = 'Play';
@@ -747,7 +1004,7 @@ function openDetail(sw, onClose) {
   $('#dSkel').onclick = e => { dPlayer.skel = !dPlayer.skel; e.currentTarget.setAttribute('aria-pressed', dPlayer.skel); };
   $('#dX').onclick = closeDetail;
   if (dr) $('#dDrill').onclick = () => { const key = p.drill; closeDetail(); if (running) stopTracking(); learnSeg = 'drills'; openDrill = key; showTab('learn'); };
-  $('#dStar').onclick = async () => { sw.star = !sw.star; await DB.put(sw); $('#dStar').textContent = sw.star ? 'Unpin' : 'Pin to keep'; toast(sw.star ? 'Pinned. It won\'t be cleared out.' : 'Unpinned'); };
+  $('#dStar').onclick = async () => { sw.star = !sw.star; await save(sw); $('#dStar').textContent = sw.star ? 'Unpin' : 'Pin to keep'; toast(sw.star ? 'Pinned. It won\'t be cleared out.' : 'Unpinned'); };
   $('#dDel').onclick = async e => { const b = e.currentTarget; if (b.dataset.sure) { swings.splice(swings.indexOf(sw), 1); await DB.del(sw.id); closeDetail(); toast('Swing deleted'); } else { b.dataset.sure = 1; b.textContent = 'Tap again to delete'; } };
 }
 function closeDetail() { if (dPlayer) { dPlayer.destroy(); dPlayer = null; } $('#detail').hidden = true; const f = dClose; dClose = null; if (f) f(); else renderAll(); }
@@ -788,6 +1045,7 @@ function renderAll() { renderTrack(); if (tab === 'swings') renderSwings(); if (
 function renderTrack() {
   $$('#angleSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.angle === settings.angle));
   $('#clubChips').innerHTML = CLUBS.map(c => `<button data-club="${c}" aria-pressed="${c === settings.club}">${c}</button>`).join('');
+  $$('#slowSeg button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.k === (settings.slow || 1)));
   const face = settings.angle === 'face', left = settings.hand === 'L';
   const bay = $('#bay');
   $('.glf', bay).setAttribute('transform', left ? 'translate(320 0) scale(-1 1)' : '');
@@ -801,6 +1059,9 @@ function renderTrack() {
 $('#angleSeg').onclick = e => { const b = e.target.closest('button'); if (b) { settings.angle = b.dataset.angle; saveSettings(); renderTrack(); } };
 $('#clubChips').onclick = e => { const b = e.target.closest('button'); if (b) { settings.club = b.dataset.club; saveSettings(); renderTrack(); } };
 $('#btnStart').onclick = startTracking;
+$('#btnUpload').onclick = () => { Snd.unlock(); $('#fileIn').click(); };
+$('#fileIn').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) startFile(f); };
+$('#slowSeg').onclick = e => { const b = e.target.closest('button'); if (b) { settings.slow = +b.dataset.k; saveSettings(); renderTrack(); } };
 $('#btnStop').onclick = stopTracking;
 $('#btnAngle').onclick = () => { settings.angle = settings.angle === 'face' ? 'dtl' : 'face'; saveSettings(); liveButtons(); det.reset(); Rec.discard(); Voice.say(settings.angle === 'face' ? 'Face on.' : 'Down the line.'); };
 $('#btnVoice').onclick = () => { settings.voice = !settings.voice; saveSettings(); liveButtons(); if (!settings.voice) Voice.stop(); else Voice.say('Voice on.'); };
@@ -949,6 +1210,8 @@ function openSettings() {
     <label class="f">Replay speed</label>${seg('sRate', [[0.2, 'Slowest'], [0.3, 'Slow'], [0.5, 'Half']], settings.replayRate)}
     <label class="f">Tracking model</label>${seg('sModel', [['lite', 'Fast'], ['full', 'More precise']], settings.model)}
     <p class="small dim" style="margin-top:6px">More precise is a bigger download and may run slower on older phones.</p>
+    <label class="f">Look for the ball</label>${seg('sBall', [[true, 'On'], [false, 'Off']], settings.ball)}
+    <p class="small dim" style="margin-top:6px">After each swing it checks the video for a white ball leaving the ground and draws its path. Works best with the back camera, good light and a still phone.</p>
     <label class="f">Mirror the front camera</label>${seg('sMirror', [[true, 'On'], [false, 'Off']], settings.mirror)}
     <label class="f" for="sSync">Skeleton timing on replays: <span id="sSyncV">${settings.syncMs}</span> ms</label><input type="range" id="sSync" min="-150" max="150" step="10" value="${settings.syncMs}">
     <p class="small dim">If the drawn skeleton runs ahead of or behind your body on replays, nudge this.</p>
@@ -956,7 +1219,7 @@ function openSettings() {
     <div class="block"><button class="btn danger" id="sWipe">Delete all swings</button></div>`;
   const bind = (id, key, conv) => $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; settings[key] = conv(b.dataset.v); saveSettings(); $$(id + ' button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
   const bool = v => v === 'true';
-  bind('#sHand', 'hand', String); bind('#sVoice', 'voice', bool); bind('#sReplay', 'replay', bool); bind('#sRate', 'replayRate', Number); bind('#sModel', 'model', String); bind('#sMirror', 'mirror', bool);
+  bind('#sHand', 'hand', String); bind('#sVoice', 'voice', bool); bind('#sReplay', 'replay', bool); bind('#sRate', 'replayRate', Number); bind('#sModel', 'model', String); bind('#sMirror', 'mirror', bool); bind('#sBall', 'ball', bool);
   $('#sHeight').onchange = e => { settings.height = clamp(parseInt(e.target.value, 10) || 175, 120, 220); e.target.value = settings.height; saveSettings(); };
   $('#sSync').oninput = e => { settings.syncMs = +e.target.value; $('#sSyncV').textContent = settings.syncMs; saveSettings(); };
   $('#sTest').onclick = () => { if (!Voice.ok) return toast('This browser has no speech voice'); Voice.say('Swing one. Your head slid about eight centimetres back.', true); };
@@ -967,7 +1230,7 @@ function openSettings() {
 $('#btnSettings').onclick = openSettings;
 
 /* ---------- boot ---------- */
-window.__sc = {Detector, analyse, makeFrame, settings, get swings() { return swings; }};
+window.__sc = {Detector, analyse, makeFrame, settings, Ball, startFile, get swings() { return swings; }};
 Voice.init();
 renderAll();
 DB.open().then(() => DB.all()).then(list => { if (Array.isArray(list)) { swings = list.sort((a, b) => b.at - a.at); renderAll(); } });
