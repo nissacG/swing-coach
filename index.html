@@ -519,8 +519,9 @@ function poseAt(sw, t, out) {
   return out;
 }
 function drawBall(ctx, sw, t) {
-  const b = sw.ball; if (!b || !b.ok) return;
+  const b = sw.ball; if (!b) return;
   const lw = Math.max(2, sw.H / 280);
+  if (!b.ok) { if (!b.box) return; ctx.save(); ctx.strokeStyle = 'rgba(255,210,63,.8)'; ctx.lineWidth = lw; ctx.setLineDash([lw * 4, lw * 3]); ctx.strokeRect(b.box[0], b.box[1], b.box[2], b.box[3]); if (b.r) { ctx.setLineDash([]); ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 2 + lw * 2, 0, 7); ctx.stroke(); } ctx.restore(); return; }
   ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   if (t < b.tGone) { ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 2 + lw * 2, 0, 7); ctx.stroke(); }
   else if (b.pts.length) {
@@ -653,7 +654,10 @@ const Grab = {
     const c = document.createElement('canvas'); c.width = cw; c.height = ch; const ctx = c.getContext('2d', {willReadFrequently: true});
     return {
       async frame(t) {
-        if (Math.abs(v.currentTime - t) > 0.0005) { const s = wait('seeked', 4000); v.currentTime = t; await s; await new Promise(r => requestAnimationFrame(r)); }
+        if (Math.abs(v.currentTime - t) > 0.0005) {
+          const s = wait('seeked', 4000), shown = v.requestVideoFrameCallback ? new Promise(r => { v.requestVideoFrameCallback(() => r()); setTimeout(r, 300); }) : null;
+          v.currentTime = t; await s; if (shown) await shown; await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        }
         ctx.drawImage(v, 0, 0, cw, ch); return ctx.getImageData(0, 0, cw, ch).data;
       },
       close
@@ -687,7 +691,7 @@ const Ball = {
   q: Promise.resolve(),
   find(sw) {
     sw.ballBusy = true; if (this.onchange) this.onchange(sw);
-    this.q = this.q.then(() => this.run(sw)).catch(() => ({ok: false, why: 'error'})).then(async r => {
+    this.q = this.q.then(() => this.run(sw)).catch(e => ({ok: false, why: 'error', dbg: String(e && e.message || e).slice(0, 140)})).then(async r => {
       sw.ball = r; sw.ballBusy = false;
       if (swings.includes(sw)) await save(sw);
       if (this.onchange) this.onchange(sw);
@@ -705,7 +709,7 @@ const Ball = {
     try {
       // body at address, in analysis pixels
       const A = poseAt(sw, sw.ph.take, new Float32Array(99)), P = i => ({x: A[i * 3] * s, y: A[i * 3 + 1] * s});
-      const sh = mid(P(11), P(12)), hip = mid(P(23), P(24)), T = dist(sh, hip); if (!(T > 6)) return {ok: false, why: 'noball'};
+      const sh = mid(P(11), P(12)), hip = mid(P(23), P(24)), T = dist(sh, hip); if (!(T > 6)) return {ok: false, why: 'small'};
       const cmT = (settings.height || 175) * 0.29, pxCm = T / cmT * (face ? 1.25 : 1), dExp = Math.max(3, 4.27 * pxCm);
       const lead = sw.hand === 'L' ? 28 : 27, trail = sw.hand === 'L' ? 27 : 28, la = P(lead), ta = P(trail), ankY = Math.max(la.y, ta.y);
       const feet = [27, 28, 29, 30, 31, 32].map(P);
@@ -721,29 +725,32 @@ const Ball = {
         ex = toe + dir * 1.5 * T; ey = ankY; sig = T;
       }
       x0 = clamp(Math.floor(x0), 0, cw); x1 = clamp(Math.ceil(x1), 0, cw); y0 = clamp(Math.floor(y0), 0, ch); y1 = clamp(Math.ceil(y1), 0, ch);
+      const box = [x0 / s, y0 / s, (x1 - x0) / s, (y1 - y0) / s], info = () => `${sw.W}x${sw.H} ${face ? 'face' : 'dtl'} x${k} ball≈${(dExp / s).toFixed(0)}px`;
       const dP = await g.frame(tLo + off), yP = lumaOf(dP, N), yQ = lumaOf(await g.frame(tHi + off), N);
       // 1. the ball: bright, colourless, ball-sized, there before and gone after
       const white = i => { const j = i * 4, r = dP[j], gg = dP[j + 1], b = dP[j + 2]; return Math.max(r, gg, b) - Math.min(r, gg, b) < 70 ? yP[i] - yQ[i] : 0; };
-      let best = null;
+      let best = null, nB = 0, nC = 0;
       for (const c of blobs(cw, x0, y0, x1, y1, white, 26, 40 * dExp * dExp)) {
+        nB++;
         const d = 2 * Math.sqrt(c.n / Math.PI), asp = c.w / c.h, fill = c.n / (c.w * c.h);
         if (d < Math.max(2.5, 0.4 * dExp) || d > 2.6 * dExp || asp < 0.5 || asp > 2 || fill < 0.45) continue;
         if (feet.some(f => dist(f, c) < 0.2 * T)) continue;
+        nC++;
         const lg = Math.log(d / dExp), score = c.v * fill * Math.exp(-lg * lg / 0.5) * Math.exp(-((c.x - ex) ** 2 + (c.y - ey) ** 2) / (2 * sig * sig));
         if (!best || score > best.score) best = Object.assign(c, {score, d});
       }
-      if (!best || best.score < 6) return {ok: false, why: 'noball'};
+      if (!best || best.score < 6) return {ok: false, why: 'none', box, dbg: `${info()} spots ${nB}/${nC} best ${best ? best.score.toFixed(1) : '-'}`};
       const bx = best.x, by = best.y, r = best.d / 2, rr = Math.max(1.5, r * 0.8);
       const disc = []; for (let yy = Math.floor(by - rr); yy <= by + rr; yy++) for (let xx = Math.floor(bx - rr); xx <= bx + rr; xx++) if (xx >= 0 && yy >= 0 && xx < cw && yy < ch && (xx - bx) ** 2 + (yy - by) ** 2 <= rr * rr) disc.push(yy * cw + xx);
       let c0 = 0; for (const i of disc) c0 += yP[i] - yQ[i]; c0 /= disc.length || 1;
-      if (c0 < 20) return {ok: false, why: 'noball'};
+      if (c0 < 20) return {ok: false, why: 'none', box, dbg: `${info()} faint ${c0.toFixed(0)}`};
       // 2. when it left: last frame it is still there, by halving the gap
       const frames = new Map(), lum = async i => { if (!frames.has(i)) frames.set(i, lumaOf(await g.frame(tLo + i * step + off), N)); return frames.get(i); };
       const here = y => { let a = 0; for (const i of disc) a += y[i] - yQ[i]; return a / disc.length > 0.5 * c0; };
       let lo = 0, hi = Math.round((tHi - tLo) / step);
       while (hi - lo > 1) { const m = (lo + hi) >> 1; if (here(await lum(m))) lo = m; else hi = m; frames.delete(m); }
       const tGone = tLo + hi * step, out = {ok: true, x: bx / s, y: by / s, r: r / s, tGone, tImp: tGone - step / 2, pts: [], n: 0, ux: 0, uy: 0};
-      if (Math.abs(out.tImp - sw.ph.imp) > 0.3 * k) return {ok: false, why: 'noball'};
+      if (Math.abs(out.tImp - sw.ph.imp) > 0.3 * k) return {ok: false, why: 'timing', box, x: out.x, y: out.y, r: out.r, dbg: `${info()} left ${out.tImp.toFixed(2)} impact ${sw.ph.imp.toFixed(2)}`};
       // 3. where it went: bright spots that were in neither reference frame
       const bg = new Uint8Array(N); for (let i = 0; i < N; i++) bg[i] = yP[i] > yQ[i] ? yP[i] : yQ[i];
       const nF = k > 1 ? 16 : 10, thr = Math.max(12, 0.18 * c0), aMin = Math.max(4, 0.4 * Math.PI * r * r), aMax = 60 * Math.PI * r * r;
@@ -787,6 +794,7 @@ const Ball = {
       out.ux = vx / vl; out.uy = vy / vl; out.n = chain.length; out.pts = chain.map(c => ({t: times[c.f], x: c.x / s, y: c.y / s}));
       if (face) {
         out.launch = Math.round(deg(Math.atan2(-vy, vx * dir)));
+        if (out.launch > 52 || out.launch < -4) { out.pts = []; out.n = 0; delete out.launch; return out; }
         const sp = []; for (let i = 1; i < chain.length; i++) sp.push(Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (chain[i].f - chain[i - 1].f));
         sp.sort((a, b) => a - b); const mph = sp[sp.length >> 1] / pxCm / 100 / (step / k) * 2.237;
         if (mph >= 15 && mph <= 210) out.mph = Math.round(mph / 5) * 5;
@@ -975,7 +983,18 @@ function ballHTML(sw) {
   const b = sw.ball, row = (label, small, val) => `<div class="board na"><i></i><div><b>${label}</b><small>${small}</small></div><div class="val">${val}</div></div>`;
   if (sw.ballBusy) return '<h3>Ball</h3><p class="dim" style="margin-top:8px">Looking for the ball…</p>';
   if (!b) return sw.video ? '<h3>Ball</h3><p class="dim small" style="margin-top:8px">This swing hasn\'t been checked for the ball.</p><button class="btn sm" id="dBallGo">Look for the ball</button>' : '';
-  if (!b.ok) return `<h3>Ball</h3><p class="dim small" style="margin-top:8px">${b.why === 'novideo' ? 'No video was saved for this swing, so the ball can\'t be traced.' : b.why === 'short' ? 'The video stops too soon after impact to see the ball leave.' : 'Couldn\'t pick out the ball on this swing. It needs a white ball in clear view on the ground, good light and a still phone.'}</p>`;
+  if (!b.ok) {
+    const msg = {
+      novideo: 'No video was saved for this swing, so the ball can\'t be traced.',
+      short: 'The video stops too soon after impact to see the ball leave. Keep filming for a second after the hit.',
+      video: 'Couldn\'t reopen the video to look for the ball.',
+      error: 'Something went wrong while looking for the ball.',
+      small: 'You are too small in the picture to find the ball.',
+      timing: 'Found something that looked like the ball (ringed on the replay), but it didn\'t disappear at impact.',
+      none: 'Couldn\'t find a white ball inside the dashed box on the replay. That is where it looks, based on where your feet are.'
+    }[b.why] || 'Couldn\'t pick out the ball on this swing.';
+    return `<h3>Ball</h3><p class="dim small" style="margin-top:8px">${msg}${b.why === 'none' || b.why === 'timing' ? ' It needs a white ball in clear view on the ground, good light and a still phone.' : ''}</p>${b.dbg ? `<p class="dim small">Details: ${esc(b.dbg)}</p>` : ''}${sw.video ? '<button class="btn sm" id="dBallGo">Look again</button>' : ''}`;
+  }
   let h = '<h3>Ball</h3>';
   if (!b.n) return h + '<p class="dim small" style="margin-top:8px">Found the ball and saw it leave, but it was out of the picture too fast to trace. Slo-mo video gives the camera more frames to catch it.</p>';
   if (sw.angle === 'face') {
