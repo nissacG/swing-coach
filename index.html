@@ -241,7 +241,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('sc.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('sc.' + k, JSON.stringify(v)); } catch (e) {} }
 };
-const settings = Object.assign({hand: 'R', height: 175, voice: true, replay: true, replayRate: 0.3, model: 'lite', mirror: true, angle: 'face', club: 'Iron', facing: 'user', syncMs: 0, slow: 1, ball: true}, store.get('settings', {}));
+const settings = Object.assign({hand: 'R', height: 175, voice: true, replay: true, replayRate: 0.3, model: 'lite', mirror: true, angle: 'face', club: 'Iron', facing: 'user', syncMs: 0, slow: 1, ball: true, voiceName: '', voiceRate: 1}, store.get('settings', {}));
 const saveSettings = () => store.set('settings', settings);
 
 const DB = {
@@ -459,10 +459,27 @@ function headline(sw) {
 }
 
 /* ---------- voice + audio ---------- */
+const ACCENT = {'en-GB': 'British', 'en-US': 'American', 'en-AU': 'Australian', 'en-IE': 'Irish', 'en-ZA': 'South African', 'en-IN': 'Indian', 'en-NZ': 'New Zealand', 'en-CA': 'Canadian'};
+const NOVELTY = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Kathy|Ralph|Deranged|Hysterical|Pipe Organ|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley)\b/i;
 const Voice = {
-  ok: 'speechSynthesis' in window, voice: null,
-  init() { if (!this.ok) return; const pick = () => { const vs = speechSynthesis.getVoices() || []; this.voice = vs.find(v => /en[-_]GB/i.test(v.lang) && v.localService) || vs.find(v => /en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null; }; pick(); try { speechSynthesis.addEventListener('voiceschanged', pick); } catch (e) {} },
-  say(text, force) { if (!this.ok || (!settings.voice && !force)) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); if (this.voice) u.voice = this.voice; u.lang = (this.voice && this.voice.lang) || 'en-GB'; u.rate = 1; speechSynthesis.speak(u); } catch (e) {} },
+  ok: 'speechSynthesis' in window, voice: null, all: [], onlist: null,
+  lang(v) { return (v.lang || '').replace('_', '-'); },
+  better(v) { return /premium|enhanced|natural|neural/i.test(v.name) ? 2 : /siri/i.test(v.name) ? 1 : 0; },
+  // English voices worth offering, best guesses first: British, then higher-quality, then by name
+  list() {
+    const en = this.all.filter(v => /^en/i.test(this.lang(v)) && !NOVELTY.test(v.name)), seen = new Set();
+    return en.filter(v => { const k = v.name + '|' + this.lang(v); if (seen.has(k)) return false; seen.add(k); return true; })
+      .sort((a, b) => /GB/i.test(this.lang(b)) - /GB/i.test(this.lang(a)) || this.better(b) - this.better(a) || a.name.localeCompare(b.name));
+  },
+  label(v) { const l = this.lang(v); return v.name.replace(/\s*\((English|United|en)[^)]*\)/i, '') + ', ' + (ACCENT[l] || l); },
+  pick() {
+    let vs = []; try { vs = speechSynthesis.getVoices() || []; } catch (e) {}
+    this.all = vs; const list = this.list();
+    this.voice = (settings.voiceName && (vs.find(v => v.voiceURI === settings.voiceName) || vs.find(v => v.name === settings.voiceName))) || list[0] || vs.find(v => /^en/i.test(v.lang)) || null;
+    if (this.onlist) this.onlist();
+  },
+  init() { if (!this.ok) return; this.pick(); try { speechSynthesis.addEventListener('voiceschanged', () => this.pick()); } catch (e) {} },
+  say(text, force) { if (!this.ok || (!settings.voice && !force)) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); if (this.voice) u.voice = this.voice; u.lang = (this.voice && this.voice.lang) || 'en-GB'; u.rate = settings.voiceRate || 1; speechSynthesis.speak(u); } catch (e) {} },
   stop() { try { this.ok && speechSynthesis.cancel(); } catch (e) {} }
 };
 const Snd = {
@@ -1205,7 +1222,10 @@ function openSettings() {
     <label class="f">You swing</label>${seg('sHand', [['R', 'Right-handed'], ['L', 'Left-handed']], settings.hand)}
     <label class="f" for="sHeight">Your height in cm (used to turn movement into centimetres)</label><input type="number" id="sHeight" inputmode="numeric" min="120" max="220" value="${settings.height}">
     <label class="f">Spoken feedback</label>${seg('sVoice', [[true, 'On'], [false, 'Off']], settings.voice)}
+    <label class="f" for="sVoiceSel">Voice</label><select id="sVoiceSel"></select>
+    <label class="f">Speaking speed</label>${seg('sVRate', [[0.85, 'Slower'], [1, 'Normal'], [1.15, 'Faster']], settings.voiceRate)}
     <button class="btn sm" id="sTest" style="margin-top:8px">Test the voice</button>
+    <p class="small dim" style="margin-top:8px">The voices come from this phone. For better ones on iPhone, open the Settings app, Accessibility, Spoken Content (Read &amp; Speak on newer iOS), Voices, English, and download an Enhanced or Premium voice. It should then appear in this list after you reopen the app.</p>
     <label class="f">Replay after each swing</label>${seg('sReplay', [[true, 'On'], [false, 'Off']], settings.replay)}
     <label class="f">Replay speed</label>${seg('sRate', [[0.2, 'Slowest'], [0.3, 'Slow'], [0.5, 'Half']], settings.replayRate)}
     <label class="f">Tracking model</label>${seg('sModel', [['lite', 'Fast'], ['full', 'More precise']], settings.model)}
@@ -1222,9 +1242,14 @@ function openSettings() {
   bind('#sHand', 'hand', String); bind('#sVoice', 'voice', bool); bind('#sReplay', 'replay', bool); bind('#sRate', 'replayRate', Number); bind('#sModel', 'model', String); bind('#sMirror', 'mirror', bool); bind('#sBall', 'ball', bool);
   $('#sHeight').onchange = e => { settings.height = clamp(parseInt(e.target.value, 10) || 175, 120, 220); e.target.value = settings.height; saveSettings(); };
   $('#sSync').oninput = e => { settings.syncMs = +e.target.value; $('#sSyncV').textContent = settings.syncMs; saveSettings(); };
-  $('#sTest').onclick = () => { if (!Voice.ok) return toast('This browser has no speech voice'); Voice.say('Swing one. Your head slid about eight centimetres back.', true); };
+  const sample = () => Voice.say('Swing one. Your head slid about eight centimetres back.', true);
+  const fillVoices = () => { const sel = $('#sVoiceSel'); if (!sel) return; const list = Voice.list(); sel.innerHTML = list.length ? list.map(v => `<option value="${esc(v.voiceURI)}" ${v === Voice.voice ? 'selected' : ''}>${esc(Voice.label(v))}</option>`).join('') : '<option>No voices found on this device</option>'; sel.disabled = !list.length; };
+  Voice.onlist = fillVoices; fillVoices();
+  $('#sVoiceSel').onchange = e => { settings.voiceName = e.target.value; saveSettings(); Voice.pick(); sample(); };
+  $('#sVRate').onclick = e => { const b = e.target.closest('button'); if (!b) return; settings.voiceRate = +b.dataset.v; saveSettings(); $$('#sVRate button').forEach(x => x.setAttribute('aria-pressed', x === b)); sample(); };
+  $('#sTest').onclick = () => { if (!Voice.ok) return toast('This browser has no speech voice'); sample(); };
   $('#sWipe').onclick = async e => { const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to delete everything'; return; } for (const s of swings) await DB.del(s.id); swings = []; toast('All swings deleted'); b.textContent = 'Delete all swings'; delete b.dataset.sure; };
-  $('#sX').onclick = () => { $('#settings').hidden = true; renderAll(); };
+  $('#sX').onclick = () => { Voice.onlist = null; Voice.stop(); $('#settings').hidden = true; renderAll(); };
   $('#settings').hidden = false; $('#settings').scrollTop = 0;
 }
 $('#btnSettings').onclick = openSettings;
