@@ -178,7 +178,7 @@ details ol,details ul{margin:10px 0 4px;padding-left:22px} details li{margin-bot
         <input type="file" id="fileIn" accept="video/*" hidden>
         <label class="f">Speed of the video you pick</label>
         <div class="seg" id="slowSeg" role="group" aria-label="Video speed"><button data-k="1">Normal</button><button data-k="4">Slo-mo 120</button><button data-k="8">Slo-mo 240</button></div>
-        <p class="small dim" style="margin-top:10px">Pick a clip filmed from the angle chosen above. It needs your whole body in the picture and about a second of you standing still over the ball before the swing. For slo-mo, the whole swing has to sit inside the slowed part of the clip.</p>
+        <p class="small dim" style="margin-top:10px">Pick a clip of one or more swings. If the angle chosen above is clearly wrong for the clip, it is corrected for you. It needs your whole body in the picture and about a second of you standing still over the ball before the swing. For slo-mo, the whole swing has to sit inside the slowed part of the clip.</p>
       </div>
     </section>
     <section class="view" id="v-swings"></section>
@@ -756,37 +756,42 @@ const Ball = {
       const nF = k > 1 ? 16 : 10, thr = Math.max(12, 0.18 * c0), aMin = Math.max(4, 0.4 * Math.PI * r * r), aMax = 60 * Math.PI * r * r;
       const rx0 = face ? (dir > 0 ? Math.floor(bx + 1.5 * r) : 0) : clamp(Math.floor(bx - 3.5 * T), 0, cw), rx1 = face ? (dir > 0 ? cw : Math.ceil(bx - 1.5 * r)) : clamp(Math.ceil(bx + 3.5 * T), 0, cw);
       const ry1 = clamp(Math.ceil(face ? by + 0.3 * T : by - 1.5 * r), 0, ch), buf = new Float32Array(99), cands = [], times = [];
-      for (let f = 0; f < nF; f++) {
-        const t = tLo + (hi + f) * step; if (t > sw.dur - 0.01) break;
+      let sig0 = -1;
+      for (let raw = 0; raw < nF * 3 && cands.length < nF; raw++) {
+        const t = tLo + (hi + raw) * step; if (t > sw.dur - 0.01) break;
         const y = lumaOf(await g.frame(t + off), N), pose = poseAt(sw, t, buf), J = i => ({x: pose[i * 3] * s, y: pose[i * 3 + 1] * s});
-        const list = [];
+        let sig = 0; for (let i = 0; i < N; i += 89) sig = (sig * 31 + y[i]) >>> 0;
+        if (sig === sig0) continue; sig0 = sig;
+        const list = [], f = cands.length;
         for (const c of blobs(cw, rx0, 0, rx1, ry1, i => y[i] - bg[i], thr, aMax)) {
           if (c.n < aMin) continue;
           const dx = (c.x - bx) * (face ? dir : 1), dy = by - c.y, far = Math.hypot(dx, dy); if (far < 2 * r) continue;
           const el = deg(Math.atan2(dy, dx)); if (face ? (el < -10 || el > 70) : (el < 45 || el > 135)) continue;
-          if (BONES.some(([a, b]) => segDist(c, J(a), J(b)) < 0.18 * T) || dist(c, J(0)) < 0.3 * T) continue;
-          list.push({x: c.x, y: c.y, e: c.v * c.n, f});
+          if (BONES.some(([a, b]) => segDist(c, J(a), J(b)) < 0.18 * T) || dist(c, J(0)) < 0.3 * T || dist(c, J(15)) < 0.45 * T || dist(c, J(16)) < 0.45 * T) continue;
+          list.push({x: c.x, y: c.y, e: c.v * c.n, n: c.n, f});
         }
         list.sort((a, b) => b.e - a.e); cands.push(list.slice(0, 8)); times.push(t);
       }
-      const rho = face ? 1 : 0.8; let chain = null, score = 0;
+      const rho = face ? 1 : 0.8, tf = times.map(t => (t - times[0]) / step); let chain = null, score = 0;
       for (let a = 0; a < Math.min(4, cands.length - 1); a++) for (let b = a + 1; b <= Math.min(a + 2, cands.length - 1); b++) for (const ci of cands[a]) for (const cj of cands[b]) {
-        let ux = (cj.x - ci.x) / (b - a), uy = (cj.y - ci.y) / (b - a), sp = Math.hypot(ux, uy); if (sp < 0.75 * 2 * r) continue;
+        if (!face && cj.n > 1.25 * ci.n) continue;
+        const ab = tf[b] - tf[a]; let ux = (cj.x - ci.x) / ab, uy = (cj.y - ci.y) / ab, sp = Math.hypot(ux, uy); if (sp < 0.75 * 2 * r) continue;
         const ox = ci.x - bx, oy = ci.y - by, od = Math.hypot(ox, oy); if ((ox * ux + oy * uy) / (od * sp) < (face ? 0.94 : 0.85)) continue;
-        const t0 = a - od / sp; if (face ? (t0 < -1.4 || t0 > 0.4) : (t0 < -3 || t0 > 0.6)) continue;
+        const t0 = tf[a] - od / sp; if (face ? (t0 < -1.4 || t0 > 0.4) : (t0 > 0.6 || (tf[a] > 0 && sp > 1.05 * od / tf[a]))) continue; // down the line the ball shrinks away, so each step is shorter than the last
         const ch2 = [ci, cj]; let last = cj, lf = b, miss = 0;
         for (let f = b + 1; f < cands.length && miss < 2; f++) {
-          const gap = f - lf, px = last.x + ux * rho * gap, py = last.y + uy * rho * gap, tol = (face ? 0.35 : 0.5) * sp * gap + 2 * r; let pick = null, pd = tol;
-          for (const c of cands[f]) { const d = Math.hypot(c.x - px, c.y - py); if (d < pd && (c.x - last.x) * ux + (c.y - last.y) * uy > 0) { pd = d; pick = c; } }
+          const gap = tf[f] - tf[lf], px = last.x + ux * rho * gap, py = last.y + uy * rho * gap, tol = (face ? 0.35 : 0.5) * sp * gap + 2 * r; let pick = null, pd = tol;
+          for (const c of cands[f]) { const d = Math.hypot(c.x - px, c.y - py); if (d < pd && (c.x - last.x) * ux + (c.y - last.y) * uy > 0 && (face || c.n <= 1.25 * last.n)) { pd = d; pick = c; } }
           if (!pick) { miss++; continue; }
-          ux = (pick.x - last.x) / gap; uy = (pick.y - last.y) / gap; sp = Math.hypot(ux, uy); last = pick; lf = f; miss = 0; ch2.push(pick); if (sp < 0.5 * r) break;
+          const nsp = Math.hypot(pick.x - last.x, pick.y - last.y) / gap; if (!face && nsp > 1.05 * sp) { miss++; continue; }
+          ux = (pick.x - last.x) / gap; uy = (pick.y - last.y) / gap; sp = nsp; last = pick; lf = f; miss = 0; ch2.push(pick); if (sp < 0.5 * r) break;
         }
-        const sc = ch2.length * 1e4 + Math.hypot(cj.x - ci.x, cj.y - ci.y) / (b - a);
+        const sc = ch2.length * 1e4 + Math.hypot(cj.x - ci.x, cj.y - ci.y) / ab;
         if (sc > score) { score = sc; chain = ch2; }
       }
       if (!chain) return out;
       if (face && chain.length >= 3) { // the first spot is often the clubhead sitting on top of the ball: drop it if it doesn't fit the spacing of the rest
-        const gap = i => Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (chain[i].f - chain[i - 1].f), rest = []; for (let i = 2; i < chain.length; i++) rest.push(gap(i));
+        const gap = i => Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (tf[chain[i].f] - tf[chain[i - 1].f]), rest = []; for (let i = 2; i < chain.length; i++) rest.push(gap(i));
         rest.sort((x, y) => x - y); const m = rest[rest.length >> 1]; if (Math.abs(gap(1) - m) > 0.2 * m) chain.shift();
       }
       // direction from the ball through the first few spots
@@ -795,10 +800,11 @@ const Ball = {
       if (face) {
         out.launch = Math.round(deg(Math.atan2(-vy, vx * dir)));
         if (out.launch > 52 || out.launch < -4) { out.pts = []; out.n = 0; delete out.launch; return out; }
-        const sp = []; for (let i = 1; i < chain.length; i++) sp.push(Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (chain[i].f - chain[i - 1].f));
+        const sp = []; for (let i = 1; i < chain.length; i++) sp.push(Math.hypot(chain[i].x - chain[i - 1].x, chain[i].y - chain[i - 1].y) / (tf[chain[i].f] - tf[chain[i - 1].f]));
         sp.sort((a, b) => a - b); const mph = sp[sp.length >> 1] / pxCm / 100 / (step / k) * 2.237;
         if (mph >= 15 && mph <= 210) out.mph = Math.round(mph / 5) * 5;
-      } else out.dirDeg = Math.round(deg(Math.atan2(vx, -vy)));
+      } else if (Math.abs(bx / cw - 0.5) <= 0.15) out.dirDeg = Math.round(deg(Math.atan2(vx, -vy)));
+      else out.offLine = true;
       return out;
     } finally { g.close(); }
   }
@@ -940,7 +946,15 @@ async function onSwing(ev) {
   const blob = file ? fileBlob : await Rec.stop();
   if (!running) return;
   let sw;
-  try { sw = pack(ev, t0, blob, analyse(ev, {angle: settings.angle, hand: settings.hand, height: settings.height, club: settings.club}), thumb, k, file ? t0 * k : 0); }
+  try {
+    const cfg = angle => analyse(ev, {angle, hand: settings.hand, height: settings.height, club: settings.club});
+    let res = cfg(settings.angle);
+    if (file && res.viewHint) {
+      const other = settings.angle === 'face' ? 'dtl' : 'face', alt = cfg(other);
+      if (!alt.viewHint) { res = alt; settings.angle = other; saveSettings(); liveButtons(); toast(other === 'dtl' ? 'This looks filmed down the line, so it was checked that way' : 'This looks filmed face-on, so it was checked that way'); }
+    }
+    sw = pack(ev, t0, blob, res, thumb, k, file ? t0 * k : 0);
+  }
   catch (e) { resume(); return; }
   if (file) { fileFound++; if (blob && blob.size > 60e6) { sw.big = true; if (!bigTold) { bigTold = true; toast('Long video: the checks are saved, the video itself is not'); } } }
   swings.unshift(sw); sessionN++; $('#count').textContent = sessionN;
@@ -996,12 +1010,13 @@ function ballHTML(sw) {
     return `<h3>Ball</h3><p class="dim small" style="margin-top:8px">${msg}${b.why === 'none' || b.why === 'timing' ? ' It needs a white ball in clear view on the ground, good light and a still phone.' : ''}</p>${b.dbg ? `<p class="dim small">Details: ${esc(b.dbg)}</p>` : ''}${sw.video ? '<button class="btn sm" id="dBallGo">Look again</button>' : ''}`;
   }
   let h = '<h3>Ball</h3>';
-  if (!b.n) return h + '<p class="dim small" style="margin-top:8px">Found the ball and saw it leave, but it was out of the picture too fast to trace. Slo-mo video gives the camera more frames to catch it.</p>';
+  if (!b.n) return h + '<p class="dim small" style="margin-top:8px">Found the ball (ringed on the replay) and saw it leave, but there weren\'t enough clear frames of it in flight to trace. Slo-mo video gives the camera many more frames to catch it.</p>';
   if (sw.angle === 'face') {
     h += row('Launch angle', 'How steeply the ball left the ground', b.launch + '°');
     h += b.mph ? row('Ball speed', `Rough, from ${b.n} sightings of the ball`, '≈' + b.mph + ' mph') : '';
   } else {
     const d = b.dirDeg, a = Math.abs(d);
+    if (b.offLine || d == null) return h + `<p class="small dim" style="margin-top:8px">Traced the ball leaving (the yellow line on the replay) from ${b.n} video frames. The ball was off to one side of the picture, so left or right can't be judged. For a start direction, put the phone directly behind the ball, pointing at your target, so the ball sits in the middle of the picture.</p>`;
     h += row('Start direction', 'Against straight up the picture', a < 3 ? 'Straight' : a + '° ' + (d > 0 ? 'right' : 'left'));
   }
   return h + `<p class="small dim" style="margin-top:10px">Traced from ${b.n} video frames after impact, so treat these as estimates.${sw.angle === 'face' ? '' : ' The direction only means something if the phone points straight down your target line.'}</p>`;
@@ -1090,7 +1105,7 @@ function renderTrack() {
   $('.ph', bay).style.transform = `translate(${px}px,${py}px) rotate(${face ? 0 : 90}deg)`;
   $('.cone', bay).style.transform = `translate(${px}px,${py}px) rotate(${rot}deg) scale(${face ? 1 : 0.62})`;
   $('#bayNote').textContent = 'Yellow marks where the phone goes';
-  $('#angleNote').textContent = face ? 'Phone level with your hands, 3 to 4 metres in front of your chest. Checks head movement, hip slide, weight shift, lead arm, shoulder turn and tempo.' : 'Phone behind you, on a line through your hands toward the target, hip height, 3 to 4 metres back. Checks posture at address, whether you keep it to impact, and tempo.';
+  $('#angleNote').textContent = face ? 'Phone level with your hands, 3 to 4 metres in front of your chest. Checks head movement, hip slide, weight shift, lead arm, shoulder turn and tempo.' : 'Phone behind you, on a line through your hands toward the target, hip height, 3 to 4 metres back. Checks posture at address, whether you keep it to impact, and tempo. To judge where the ball starts, line the phone up through the ball instead.';
 }
 $('#angleSeg').onclick = e => { const b = e.target.closest('button'); if (b) { settings.angle = b.dataset.angle; saveSettings(); renderTrack(); } };
 $('#clubChips').onclick = e => { const b = e.target.closest('button'); if (b) { settings.club = b.dataset.club; saveSettings(); renderTrack(); } };
